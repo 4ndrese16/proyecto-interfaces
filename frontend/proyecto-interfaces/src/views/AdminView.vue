@@ -1,0 +1,5 @@
+<template>
+  <div class="admin-container">
+    <h1>Admin Dashboard</h1>
+  </div>
+</template>
