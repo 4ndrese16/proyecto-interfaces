@@ -7,12 +7,11 @@ const ColorPalette = sequelize.define('ColorPalette', {
     allowNull: false
   },
 
-  primary_background: DataTypes.STRING,
+  main_bg_background: DataTypes.STRING,
   secondary_background: DataTypes.STRING,
-  card_background: DataTypes.STRING,
+  accent_color: DataTypes.STRING,
   text_color: DataTypes.STRING,
-  button_background: DataTypes.STRING,
-  button_text_color: DataTypes.STRING,
+  alternate_text_color: DataTypes.STRING,
 
   is_public: {
     type: DataTypes.BOOLEAN,

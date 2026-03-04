@@ -29,6 +29,15 @@
 
 /*--------------------------------------------------------------------- skeleton ---------------------------------------------------------------------*/
 
+:root {
+    --main-bg-color: #fff;
+    --secondary-color: #252525;
+    --accent-color: #03cafc;
+    --text-color: #000;
+    --alternate-text-color: #ffffff;
+
+}
+
 * {
      box-sizing: border-box !important;
 }
@@ -38,7 +47,7 @@ html {
 }
 
 body {
-     color: #666666;
+     color: var(--text-color);
      font-size: 14px;
      font-family: 'Poppins', sans-serif;
      line-height: 1.80857;
@@ -46,7 +55,7 @@ body {
 }
 
 a {
-     color: #1f1f1f;
+     color: var(--text-color);
      text-decoration: none !important;
      outline: none !important;
      -webkit-transition: all .3s ease-in-out;
@@ -68,7 +77,7 @@ h6 {
      padding: 0 0 10px 0;
      font-weight: normal;
      line-height: normal;
-     color: #111111;
+     color: var(--text-color);
      margin: 0
 }
 
@@ -110,7 +119,7 @@ h3 a,
 h4 a,
 h5 a,
 h6 a {
-     color: #212121;
+     color: var(--text-color);
      text-decoration: none!important;
      opacity: 1
 }
@@ -135,7 +144,7 @@ p {
 }
 
 a {
-     color: #222222;
+     color: var(--text-color);
      text-decoration: none;
      outline: none !important;
 }
@@ -163,7 +172,7 @@ img {
 .btn-custom {
      margin-top: 20px;
      background-color: transparent !important;
-     border: 2px solid #ddd;
+     border: 2px solid var(--secondary-color);
      padding: 12px 40px;
      font-size: 16px;
 }
@@ -171,13 +180,13 @@ img {
 .lead {
      font-size: 18px;
      line-height: 30px;
-     color: #767676;
+     color: var(--secondary-color);
      margin: 0;
      padding: 0;
 }
 
 .form-control:focus {
-     border-color: #ffffff !important;
+     border-color: var(--alternate-text-color) !important;
      box-shadow: 0 0 0 .2rem rgba(255, 255, 255, .25);
 }
 
@@ -222,7 +231,7 @@ button {
 .loader_bg {
      position: fixed;
      z-index: 9999999;
-     background: #fff;
+     background: var(--main-bg-color);
      width: 100%;
      height: 100%;
 }
@@ -256,7 +265,7 @@ button {
 
 .navigation.navbar {
      float: right;
-     background: #fff;
+     background: var(--main-bg-color);
      clear: both;
      padding: 23px 25px !important;
      border-radius: 64px;
@@ -264,7 +273,7 @@ button {
 
 .navigation.navbar-dark .navbar-nav .nav-link {
      padding: 0 20px;
-     color: #070404;
+     color: var(--text-color);
      font-size: 17px;
      line-height: 20px;
      font-weight: 500;
@@ -272,14 +281,14 @@ button {
 
 .navigation.navbar-dark .navbar-nav .nav-link:focus,
 .navigation.navbar-dark .navbar-nav .nav-link:hover {
-     color: #03cafc;
+     color: var(--accent-color);
 }
 
 .navigation.navbar-dark .navbar-nav .active>.nav-link,
 .navigation.navbar-dark .navbar-nav .nav-link.active,
 .navigation.navbar-dark .navbar-nav .nav-link.show,
 .navigation.navbar-dark .navbar-nav .show>.nav-link {
-     color: #03cafc;
+     color: var(--accent-color);
 }
 
 .navbar-expand-md .navbar-nav {
@@ -287,29 +296,33 @@ button {
 }
 
 .login_btn a {
-     background: #03cafc;
+     background: var(--accent-color);
      padding: 9px 32px !important;
      display: inline;
      border-radius: 20px;
-     color: #fff !important;
+     color: var(--alternate-text-color) !important;
      margin: 0 10px;
 }
 
 .login_btn a:hover {
-     background: #000 !important;
+     background: var(--text-color) !important;
 }
 
 .sea_icon a {
-     color: #8c8c8c !important;
+     color: var(--secondary-color) !important;
 }
 
 .header {
      width: 100%;
      padding: 30px 30px;
      background: transparent;
-     position: absolute;
+     position: relative;
      z-index: 999;
-     border-top: #090102 solid 11px;
+     border-top: var(--text-color) solid 11px;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='black' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 .logo {
@@ -329,7 +342,7 @@ button {
 }
 
 .text-bg h1 {
-     color: #070404;
+     color: var(--text-color);
      font-size: 60px;
      line-height: 76px;
      padding-bottom: 45px;
@@ -338,8 +351,8 @@ button {
 }
 
 .text-bg .read_more {
-     border: #1a1a1a solid 2px;
-     color: #1a1a1a !important;
+     border: var(--text-color) solid 2px;
+     color: var(--text-color) !important;
      font-weight: 500;
      display: block;
      margin: 0 auto;
@@ -360,10 +373,10 @@ button {
      width: 62px;
      height: 60px;
      background: transparent;
-     border: #1a1a1a solid 2px;
+     border: var(--text-color) solid 2px;
      opacity: 1;
      font-size: 30px;
-     color: #131215;
+     color: var(--text-color);
      border-radius: 60px;
      top: 43%;
 }
@@ -373,8 +386,8 @@ button {
 #banner1 .carousel-control-prev:focus,
 #banner1 .carousel-control-next:focus {
      background: transparent;
-     border: #03cafc solid 2px;
-     color: #03cafc;
+     border: var(--accent-color) solid 2px;
+     color: var(--accent-color);
 }
 
 #banner1 a.carousel-control-prev {
@@ -394,7 +407,7 @@ button {
 
 .titlepage h2 {
      font-size: 35px;
-     color: #2a2a2c;
+     color: var(--text-color);
      line-height: 45px;
      font-weight: bold;
      padding: 0;
@@ -409,8 +422,8 @@ button {
 .read_more {
      font-size: 17px;
      background-color: transparent;
-     border: #ffffff solid 2px;
-     color: #1a1a1a;
+     border: var(--alternate-text-color) solid 2px;
+     color: var(--text-color);
      padding: 15px 0px;
      width: 100%;
      max-width: 222px;
@@ -422,8 +435,8 @@ button {
 }
 
 .read_more:hover {
-     background: #03cafc;
-     color: #fff !important;
+     background: var(--accent-color);
+     color: var(--alternate-text-color) !important;
      transition: ease-in all 0.5s;
 }
 
@@ -431,7 +444,7 @@ button {
 /** about section **/
 
 .about {
-     border-bottom: #000 solid 1px;
+     border-bottom: var(--text-color) solid 1px;
      padding: 130px 0 90px 0;
 }
 
@@ -456,15 +469,15 @@ button {
 }
 
 .about .titlepage {
-     border: #000 solid 1px;
+     border: var(--text-color) solid 1px;
      padding: 40px 40px;
      z-index: 10018;
-     background: #fff;
+     background: var(--main-bg-color);
      margin-right: 40px;
 }
 
 .about .titlepage p {
-     color: #2a2a2c;
+     color: var(--text-color);
      font-size: 17px;
      line-height: 35px;
      font-weight: 400;
@@ -472,8 +485,8 @@ button {
 }
 
 .about .read_more {
-     border: #1a1a1a solid 2px;
-     color: #1a1a1a;
+     border: var(--text-color) solid 2px;
+     color: var(--text-color);
      font-weight: 500;
      margin-top: 44px;
 }
@@ -485,7 +498,7 @@ button {
 /** Our  Glasses section **/
 
 .glasses {
-     background: #fff;
+     background: var(--main-bg-color);
      margin-top: 90px;
 }
 
@@ -502,13 +515,13 @@ button {
 }
 
 .blu {
-     color: #03cafc;
+     color: var(--accent-color);
      text-transform: initial;
 }
 
 .glasses .glasses_box {
      text-align: center;
-     border: #555556 solid 1px;
+     border: var(--secondary-color) solid 1px;
      border-radius: 2px;
      padding: 120px 0px 30px 0px;
      margin-bottom: 30px;
@@ -519,21 +532,21 @@ button {
 }
 
 .glasses .glasses_box h3 {
-     color: #100d0d;
+     color: var(--text-color);
      font-size: 22px;
      line-height: 20px;
      padding: 70px 0px 9px 0px;
 }
 
 .glasses .glasses_box p {
-     color: #2a2a2c;
+     color: var(--text-color);
      font-size: 18px;
      line-height: 28px;
      font-weight: 400;
 }
 
 .glasses .read_more {
-     border: #1a1a1a solid 2px;
+     border: var(--text-color) solid 2px;
      font-weight: 500;
      display: block;
      margin: 0 auto;
@@ -548,9 +561,9 @@ button {
 
 .shop {
      margin-top: 90px;
-     background: #fefdf9;
-     border-top: #f2f1ed solid 1px;
-     border-bottom: #f2f1ed solid 1px;
+     background: var(--main-bg-color);
+     border-top: var(--main-bg-color) solid 1px;
+     border-bottom: var(--main-bg-color) solid 1px;
 }
 
 .shop .shop_img figure {
@@ -567,7 +580,7 @@ button {
 
 .shop .max_width {
      text-align: left;
-     background: #030404;
+     background: var(--secondary-color);
      height: 100%;
      padding-top: 86px;
      padding-left: 50px;
@@ -583,15 +596,15 @@ button {
 }
 
 .shop .titlepage h2 {
-     color: #fff;
-     border-bottom: #fff solid 1px;
+     color: var(--alternate-text-color);
+     border-bottom: var(--alternate-text-color) solid 1px;
      padding-bottom: 10px;
      float: left;
      clear: both;
 }
 
 .shop .titlepage p {
-     color: #fff;
+     color: var(--alternate-text-color);
      font-size: 17px;
      line-height: 30px;
      padding: 40px 0px 80px 0;
@@ -600,7 +613,7 @@ button {
 }
 
 .shop .titlepage .read_more {
-     color: #fff !important
+     color: var(--alternate-text-color) !important
 }
 
 
@@ -619,14 +632,14 @@ button {
 }
 
 .clients .titlepage p {
-     color: #2a2a2c;
+     color: var(--text-color);
      font-size: 17px;
      line-height: 29px;
      padding-top: 10px;
 }
 
 .clients_box h3 {
-     color: #2a2a2c;
+     color: var(--text-color);
      font-size: 26px;
      line-height: 30px;
      padding-top: 23px;
@@ -634,7 +647,7 @@ button {
 }
 
 .clients_box p {
-     color: #2a2a2c;
+     color: var(--text-color);
      font-size: 17px;
      line-height: 30px;
 }
@@ -645,7 +658,7 @@ button {
 }
 
 .clients_box {
-     border: #606060 solid 1px;
+     border: var(--secondary-color) solid 1px;
      padding: 40px 32px 40px 0px;
      float: left;
      text-align: left;
@@ -667,11 +680,11 @@ button {
      width: 20px;
      height: 20px;
      border-radius: 20px;
-     background: #111;
+     background: var(--text-color);
 }
 
 #myCarousel .carousel-indicators .active {
-     background: #8c8a8a;
+     background: var(--secondary-color);
 }
 
 #myCarousel .carousel-control-prev,
@@ -690,7 +703,7 @@ button {
 }
 
 .contact .main_form h3 {
-     color: #4b4b4c;
+     color: var(--secondary-color);
      font-size: 27px;
      line-height: 30px;
      text-align: center;
@@ -707,18 +720,18 @@ button {
 .main_form {
      position: absolute;
      z-index: 999;
-     background: #fff;
+     background: var(--main-bg-color);
      padding: 40px 50px;
      margin-top: 107px;
 }
 
 .main_form .contactus {
-     border-bottom: #111111 solid 1px;
+     border-bottom: var(--text-color) solid 1px;
      margin-bottom: 25px;
      width: 100%;
      height: 57px;
      background: transparent;
-     color: #4b4b4c;
+     color: var(--secondary-color);
      font-size: 18px;
      font-weight: normal;
      border-top: inherit;
@@ -727,13 +740,13 @@ button {
 }
 
 .main_form .contactusmess {
-     border-bottom: #111111 solid 1px;
+     border-bottom: var(--text-color) solid 1px;
      margin-bottom: 25px;
      width: 100%;
      padding-top: 40px;
      padding-bottom: 14px;
      background: transparent;
-     color: #4b4b4c;
+     color: var(--secondary-color);
      ;
      font-size: 18px;
      font-weight: normal;
@@ -743,11 +756,11 @@ button {
 }
 
 .send_btn {
-     background: #03cafc;
+     background: var(--accent-color);
      font-weight: 600;
      font-size: 18px;
      width: 100%;
-     color: #fff;
+     color: var(--alternate-text-color);
      height: 50px;
      border-radius: 30px;
      margin-top: 20px;
@@ -756,12 +769,12 @@ button {
 }
 
 .send_btn:hover {
-     background: #4b4b4c;
+     background: var(--secondary-color);
      transition: ease-in all 0.5s;
 }
 
 #request *::placeholder {
-     color: #4b4b4c;
+     color: var(--secondary-color);
      opacity: 1;
 }
 
@@ -772,7 +785,7 @@ button {
 /** footer **/
 
 .footer {
-     background: #252525;
+     background: var(--secondary-color);
      padding-top: 90px;
      text-align: center;
      font-family: 'Roboto', sans-serif;
@@ -786,14 +799,14 @@ ul.location_icon li {
      display: inline-block;
      font-size: 17px;
      line-height: 20px;
-     color: #fff;
+     color: var(--alternate-text-color);
      text-align: center;
      padding: 0 40px;
 }
 
 ul.location_icon li a {
      font-size: 40px;
-     color: #fff;
+     color: var(--alternate-text-color);
      line-height: 30px;
      display: block;
 }
@@ -801,11 +814,11 @@ ul.location_icon li a {
 .copyright {
      margin-top: 80px;
      padding-bottom: 20px;
-     background: #fbfdfd;
+     background: var(--main-bg-color);
 }
 
 .copyright p {
-     color: #292929;
+     color: var(--text-color);
      font-size: 18px;
      line-height: 22px;
      text-align: center;
@@ -814,11 +827,11 @@ ul.location_icon li a {
 }
 
 .copyright a {
-     color: #292929;
+     color: var(--text-color);
 }
 
 .copyright a:hover {
-     color: #03cafc;
+     color: var(--accent-color);
 }
 
 
@@ -829,7 +842,7 @@ ul.location_icon li a {
 
 .position_head .header {
      position: inherit;
-     background: #03cafc;
+     background: var(--accent-color);
 }
 
 .position_head .glasses,
