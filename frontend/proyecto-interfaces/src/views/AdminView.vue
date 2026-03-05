@@ -16,6 +16,9 @@
                                     <li class="nav-item mb-1">
                                         <button :class="['nav-link p-1', subTab === 'palette' ? 'active' : '']" @click="subTab = 'palette'" type="button">Paleta de colores</button>
                                     </li>
+                                    <li class="nav-item mb-1">
+                                        <button :class="['nav-link p-1', subTab === 'typography' ? 'active' : '']" @click="subTab = 'typography'" type="button">Tipografías</button>
+                                    </li>
                                     <!-- future submenu items -->
                                 </ul>
                             </li>
@@ -41,6 +44,17 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-show="subTab === 'typography'">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <FontForm />
+                                    </div>
+                                    <div class="col-12">
+                                        <FontTable />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -54,6 +68,8 @@ import { ref } from 'vue';
 import ColorForm from '@/components/admin/settings/ColorForm.vue';
 import PaletteTable from '@/components/admin/settings/PaletteTable.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
+import FontForm from '@/components/admin/settings/FontForm.vue';
+import FontTable from '@/components/admin/settings/FontTable.vue';
 import App from '@/App.vue';
 
 // default tab on load: configuraciones and default submenu
