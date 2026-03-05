@@ -33,6 +33,11 @@
             </button>
             <button class="btn btn-outline-secondary" type="button" @click="reset" :disabled="saving">Reset</button>
           </div>
+
+          <div class="form-check form-switch mt-3">
+            <input class="form-check-input" type="checkbox" id="isPublic" v-model="form.is_public">
+            <label class="form-check-label" for="isPublic">Hacer pública (visible en listado público)</label>
+          </div>
         </div>
 
         <!-- Preview -->
@@ -100,6 +105,7 @@ export default {
       form: {
         id: this.modelValue.id || null,
         name: this.modelValue.name || '',
+        is_public: this.modelValue.is_public || false,
         // defaults from src/assets/css/style.css :root
         main_bg_color: this.modelValue.main_bg_color || '#ffffff',
         secondary_color: this.modelValue.secondary_color || '#252525',
@@ -239,6 +245,7 @@ export default {
     reset() {
       this.form = {
         name: '',
+        is_public: false,
         main_bg_color: '#ffffff',
         secondary_color: '#252525',
         accent_color: '#03cafc',

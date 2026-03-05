@@ -31,17 +31,14 @@
                               <li class="nav-item">
                                  <a class="nav-link" href="shop.html">Shop</a>
                               </li>
-                              <li class="nav-item">
-                                 <a class="nav-link" href="contact.html">Contact Us</a>
+                              <li v-if="isAdmin" class="nav-item">
+                                 <router-link class="nav-link" to="/admin">Admin</router-link>
                               </li>
                               <li class="nav-item d_none login_btn">
                                  <a class="nav-link" href="#">Login</a>
                               </li>
                               <li class="nav-item d_none">
                                  <a class="nav-link" href="#">Register</a>
-                              </li>
-                              <li class="nav-item d_none sea_icon">
-                                 <a class="nav-link" href="#"><i class="fa fa-shopping-bag" aria-hidden="true"></i><i class="fa fa-search" aria-hidden="true"></i></a>
                               </li>
                            </ul>
                         </div>
@@ -52,3 +49,43 @@
          </div>
     </header>
 </template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { getToken } from '@/api/auth';
+
+const isAdmin = ref(false);
+
+function parseJwt(token) {
+   try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(atob(payload).split('').map(function(c) {
+         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(json);
+   } catch (e) {
+      return null;
+   }
+}
+
+function checkRole() {
+   const token = getToken();
+   if (!token) {
+      isAdmin.value = false;
+      return;
+   }
+   const payload = parseJwt(token);
+   isAdmin.value = payload && payload.role === 'admin';
+}
+
+onMounted(() => {
+   checkRole();
+   window.addEventListener('storage', checkRole);
+});
+
+onBeforeUnmount(() => {
+   window.removeEventListener('storage', checkRole);
+});
+</script>

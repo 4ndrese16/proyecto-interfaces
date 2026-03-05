@@ -17,9 +17,13 @@ function createClient(baseURL = defaultBase) {
 
   // request interceptor (placeholder for auth)
   client.interceptors.request.use(cfg => {
-    // e.g., attach auth token if present
-    // const token = localStorage.getItem('token');
-    // if (token) cfg.headers.Authorization = `Bearer ${token}`;
+    // attach auth token if present in localStorage for admin endpoints
+    try {
+      const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('token') : null;
+      if (token) cfg.headers = { ...(cfg.headers || {}), Authorization: `Bearer ${token}` };
+    } catch (e) {
+      // ignore
+    }
     return cfg;
   }, err => Promise.reject(err));
 

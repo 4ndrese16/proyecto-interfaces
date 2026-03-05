@@ -20,4 +20,4 @@ const Typography = sequelize.define('Typography', {
   }
 });
 
-module.exports = TypographySettings;
+module.exports = Typography;

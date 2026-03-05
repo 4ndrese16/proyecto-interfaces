@@ -40,7 +40,7 @@
                                         <ColorForm />
                                     </div>
                                     <div class="col-12">
-                                        <PaletteTable />
+                                        <PaletteTable :adminMode="true" />
                                     </div>
                                 </div>
                             </div>
