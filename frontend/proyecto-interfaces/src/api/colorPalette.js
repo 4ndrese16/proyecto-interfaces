@@ -62,35 +62,48 @@ function mapFromBackend(obj = {}) {
   return out;
 }
 
+function noCacheConfig() {
+  return {
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0'
+    },
+    params: {
+      _ts: Date.now()
+    }
+  };
+}
+
 export async function getDefault(apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.get('/default');
+  const res = await client.get('/default', noCacheConfig());
   return mapFromBackend(res.data);
 }
 
 export async function getPublic(apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.get('/public');
+  const res = await client.get('/public', noCacheConfig());
   // expect array
   return Array.isArray(res.data) ? res.data.map(mapFromBackend) : [];
 }
 
 export async function getSelected(apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.get('/selected');
+  const res = await client.get('/selected', noCacheConfig());
   return Array.isArray(res.data) ? res.data.map(mapFromBackend) : [];
 }
 
 export async function getAll(apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.get('/');
+  const res = await client.get('/', noCacheConfig());
   return Array.isArray(res.data) ? res.data.map(mapFromBackend) : [];
 }
 
 export async function getById(id, apiBase = defaultBase) {
   if (!id) throw new Error('id required');
   const client = createClient(apiBase);
-  const res = await client.get(`/${id}`);
+  const res = await client.get(`/${id}`, noCacheConfig());
   return mapFromBackend(res.data);
 }
 
@@ -123,13 +136,6 @@ export async function setDefaultPalette(id, apiBase = defaultBase) {
   return res.data;
 }
 
-export async function setPublicPalette(id, apiBase = defaultBase) {
-  if (!id) throw new Error('id required');
-  const client = createClient(apiBase);
-  const res = await client.put(`/public/${id}`);
-  return res.data;
-}
-
 export async function setDarkPalette(id, apiBase = defaultBase) {
   if (!id) throw new Error('id required');
   const client = createClient(apiBase);
@@ -153,7 +159,6 @@ export default {
   updatePalette,
   deletePalette,
   setDefaultPalette,
-  setPublicPalette,
   setDarkPalette,
   setDaltonicPalette
 };

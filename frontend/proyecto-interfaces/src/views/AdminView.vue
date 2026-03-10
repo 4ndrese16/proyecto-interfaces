@@ -40,7 +40,7 @@
                                         <ColorForm :paletteId="editingPaletteId" @saved="onPaletteSaved" />
                                     </div>
                                     <div class="col-12">
-                                        <PaletteTable ref="paletteTable" :adminMode="true" @edit="onEditPalette" />
+                                        <PaletteTable :key="paletteTableKey" :adminMode="true" @edit="onEditPalette" />
                                     </div>
                                 </div>
                             </div>
@@ -65,7 +65,7 @@
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from 'vue';
+import { ref, nextTick } from 'vue';
 import { useColorStore } from '@/stores/colorStore'
 import { useFontStore } from '@/stores/fontStore';
 import ColorForm from '@/components/admin/settings/ColorForm.vue';
@@ -74,54 +74,56 @@ import AppHeader from '@/components/layout/AppHeader.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import FontForm from '@/components/admin/settings/FontForm.vue';
 import FontTable from '@/components/admin/settings/FontTable.vue';
-import App from '@/App.vue';
 
 // default tab on load: configuraciones and default submenu
 const activeTab = ref('config');
 const subTab = ref('palette');
 const editingPaletteId = ref(null);
 const editingFont = ref(null);
+const paletteTableKey = ref(0);
+const fontTable = ref(null);
 
 function onEditPalette(palette) {
     editingPaletteId.value = palette && palette.id ? palette.id : null;
 }
 
-function onPaletteSaved() {
-    // refresh the PaletteTable via template ref and reload color store
-    const inst = getCurrentInstance();
-    try {
-        const tbl = inst && inst.refs && inst.refs.paletteTable;
-        // reload color store (admin mode) so global selections and header update
-        try {
-            const pal = useColorStore()
-            pal.load(true)
-        } catch (e) {
-            // ignore
-        }
-        if (tbl && typeof tbl.load === 'function') tbl.load();
-    } catch (e) {}
-    // clear editing id after save
+async function onPaletteSaved() {
     editingPaletteId.value = null;
+
+    try {
+        const pal = useColorStore();
+        await pal.load(false);
+    } catch (e) {
+        // ignore
+    }
+
+    await nextTick();
+    paletteTableKey.value += 1;
 }
 
 function onEditFont(font) {
     editingFont.value = font || null;
 }
 
-function onFontSaved() {
-    const inst = getCurrentInstance();
-    try {
-        const tbl = inst && inst.refs && inst.refs.fontTable;
-        if (tbl && typeof tbl.loadAll === 'function') tbl.loadAll();
-    } catch (e) {}
+async function onFontSaved() {
+    editingFont.value = null;
 
     try {
         const fs = useFontStore();
-        fs.load(false);
-    } catch (e) {}
+        await fs.load(false);
+    } catch (e) {
+        // ignore
+    }
 
-    editingFont.value = null;
+    await nextTick();
 
+    try {
+        if (fontTable.value && typeof fontTable.value.loadAll === 'function') {
+            await fontTable.value.loadAll();
+        }
+    } catch (e) {
+        // ignore
+    }
 }
 </script>
 

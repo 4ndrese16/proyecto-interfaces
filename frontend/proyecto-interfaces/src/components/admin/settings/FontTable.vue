@@ -113,7 +113,7 @@ export default {
         await fontStore.load(true);
         items.value = Array.isArray(fontStore.items) ? [...fontStore.items] : [];
         activeId.value = fontStore.activeId;
-        // register fonts for preview if data provided
+
         items.value.forEach(registerFontsForItem);
         if (mountedReady.value) {
           rebuildDataTable();
@@ -142,7 +142,7 @@ export default {
           item._registeredBody = bodyName;
         }
       } catch (e) {
-        // ignore registration errors
+       
       }
     }
 
@@ -268,7 +268,7 @@ export default {
           }
         });
       } catch (e) {
-        // ignore datatable init issues; plain table remains functional
+
       }
     }
 

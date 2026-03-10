@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getAll, getPublic, getSelected, getDefault, setDefaultPalette, setDarkPalette, setDaltonicPalette } from '@/api/colorPalette'
+import { getAll, getPublic, getSelected, setDefaultPalette, setDarkPalette, setDaltonicPalette } from '@/api/colorPalette'
 
 export const useColorStore = defineStore('colors', {
   state: () => ({
@@ -47,7 +47,6 @@ export const useColorStore = defineStore('colors', {
           await this.setDefault(only.id)
         }
 
-        // apply persisted mode if possible
         this.applyMode(this.currentMode)
       } catch (e) {
         console.error('Failed to load palettes', e)

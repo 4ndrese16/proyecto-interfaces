@@ -73,27 +73,6 @@ exports.delete = async (req, res) => {
   res.json({ message: "Deleted" });
 };
 
-exports.setPublic = async (req, res) => {
-  const { id } = req.params;
-
-  const publicCount = await ColorPalette.count({
-    where: { is_public: true }
-  });
-
-  if (publicCount >= 3) {
-    return res.status(400).json({
-      message: "Maximum of 3 public palettes allowed"
-    });
-  }
-
-  await ColorPalette.update(
-    { is_public: true },
-    { where: { id } }
-  );
-
-  res.json({ message: "Palette set as public" });
-};
-
 exports.setDefault = async (req, res) => {
   const { id } = req.params;
 

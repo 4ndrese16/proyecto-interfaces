@@ -37,7 +37,6 @@
             <button class="btn btn-outline-secondary reset" type="button" @click="reset" :disabled="saving">Reset</button>
           </div>
 
-          <!-- is_public control removed per request: table-only workflow -->
         </div>
 
         <!-- Preview -->
@@ -61,7 +60,7 @@
 </template>
 
 <script>
-import { getDefault, getById, createPalette, updatePalette } from '../../../api/colorPalette';
+import { getById, createPalette, updatePalette } from '../../../api/colorPalette';
 
 export default {
   name: 'ColorForm',
@@ -70,26 +69,18 @@ export default {
       type: Object,
       default: () => ({})
     },
-    // optional base URL override for the palettes API; if not provided the API module will read from env
     apiBase: {
       type: String,
       default: undefined
     },
-    // optional: load an explicit palette by id on mount
     paletteId: {
       type: [String, Number],
       default: null
-    },
-    // optional: when true, try to load the default palette from the backend
-    loadDefault: {
-      type: Boolean,
-      default: false
     }
   },
   emits: ['update:modelValue', 'save', 'saved', 'error'],
   data() {
     return {
-      // map of the five color fields matching the CSS variables in style.css
       colorFields: {
         main_bg_color: 'Fondo principal',
         secondary_color: 'Color secundario',
@@ -100,8 +91,6 @@ export default {
       form: {
         id: this.modelValue.id || null,
         name: this.modelValue.name || '',
-        // is_public removed - public handling is not part of the form per new UX
-        // defaults from src/assets/css/style.css :root
         main_bg_color: this.modelValue.main_bg_color || '#ffffff',
         secondary_color: this.modelValue.secondary_color || '#252525',
         accent_color: this.modelValue.accent_color || '#03cafc',
@@ -118,87 +107,83 @@ export default {
     // On creation, optionally load palette from backend
     if (this.paletteId) {
       this.fetchById(this.paletteId);
-    } else if (this.loadDefault) {
-      this.fetchDefault();
     }
   },
   watch: {
     form: {
       handler(newVal) {
-        // emit model update on every change so parent can v-model-bind if desired
         this.$emit('update:modelValue', { ...newVal });
       },
       deep: true
     },
     modelValue: {
       handler(val) {
-        // when parent updates modelValue externally, sync into form
         if (!val) return;
         Object.keys(this.form).forEach(k => {
           if (val[k] !== undefined) this.form[k] = val[k];
         });
       },
       deep: true
-    }
-    ,
+    },
     paletteId: {
       handler(id) {
-        if (!id) return;
-        this.fetchById(id);
+        if (id) {
+          this.fetchById(id);
+          return;
+        }
+
+        this.reset();
       }
-    }
-  },
-  computed: {
-    // prefer the explicit alternate_text_color supplied by the palette for reversed text
-    buttonTextColor() {
-      return this.form.alternate_text_color || this.contrastColor(this.form.accent_color);
     }
   },
   methods: {
+    createEmptyForm() {
+      return {
+        id: null,
+        name: '',
+        main_bg_color: '#ffffff',
+        secondary_color: '#252525',
+        accent_color: '#03cafc',
+        text_color: '#000000',
+        alternate_text_color: '#ffffff'
+      };
+    },
     onColorChange(key, value) {
-      // ensure hex format for color inputs and keep text inputs in sync
       if (typeof value !== 'string') return;
       this.form[key] = value;
-    },
-    // choose black or white depending on background luminance (fallback)
-    contrastColor(hex) {
-      try {
-        const h = String(hex || '').replace('#', '');
-        if (h.length !== 6) return '#000000';
-        const r = parseInt(h.substring(0, 2), 16);
-        const g = parseInt(h.substring(2, 4), 16);
-        const b = parseInt(h.substring(4, 6), 16);
-        // relative luminance
-        const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-        return luminance > 0.6 ? '#000000' : '#ffffff';
-      } catch (e) {
-        return '#000000';
-      }
     },
     async save() {
       this.saving = true;
       this.serverError = null;
       const payload = { ...this.form };
       const id = payload.id;
+      const isEditing = !!id;
       delete payload.id;
 
       try {
         const json = id
           ? await updatePalette(id, payload, this.apiBase)
           : await createPalette(payload, this.apiBase);
+
         if (json && typeof json === 'object') {
-          Object.keys(json).forEach(k => { if (this.form.hasOwnProperty(k)) this.form[k] = json[k]; });
+          Object.keys(json).forEach(k => {
+            if (Object.prototype.hasOwnProperty.call(this.form, k)) this.form[k] = json[k];
+          });
           if (json.id) this.form.id = json.id;
         }
 
-        // success: clear server error, show success message and emit
         this.serverError = null;
         this.successMessage = json && json.name ? `Paleta "${json.name}" guardada` : 'Paleta guardada correctamente';
-        // auto-hide success message after 3s
-        setTimeout(() => { this.successMessage = null; }, 3000);
+        setTimeout(() => {
+          this.successMessage = null;
+        }, 3000);
 
         this.$emit('saved', json);
         this.$emit('save', json);
+
+        if (!isEditing) {
+          this.reset();
+        }
       } catch (err) {
         this.successMessage = null;
         this.serverError = err && err.message ? err.message : String(err);
@@ -207,28 +192,11 @@ export default {
         this.saving = false;
       }
     },
-    async fetchDefault() {
-      this.loading = true;
-      this.serverError = null;
-      try {
-        const json = await getDefault(this.apiBase);
-        if (json) {
-          Object.keys(this.form).forEach(k => {
-            if (k in json) this.form[k] = json[k];
-          });
-          if (json.id) this.form.id = json.id;
-        }
-      } catch (err) {
-        this.serverError = err && err.message ? err.message : String(err);
-        this.$emit('error', this.serverError);
-      } finally {
-        this.loading = false;
-      }
-    },
     async fetchById(id) {
       if (!id) return;
       this.loading = true;
       this.serverError = null;
+
       try {
         const json = await getById(id, this.apiBase);
         if (json) {
@@ -245,14 +213,7 @@ export default {
       }
     },
     reset() {
-      this.form = {
-        name: '',
-        main_bg_color: '#ffffff',
-        secondary_color: '#252525',
-        accent_color: '#03cafc',
-        text_color: '#000000',
-        alternate_text_color: '#ffffff'
-      };
+      this.form = this.createEmptyForm();
     }
   }
 };
@@ -297,24 +258,13 @@ export default {
   border: 1px solid var(--alternate-text-color);
 }
 
-.form-control{
+.form-control {
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
 }
 
-/* Small adjustments to keep color inputs tidy */
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-input[type="color"]::-webkit-color-swatch {
-  border: none;
-}
-
-@media (max-width: 575.98px) {
-  .preview-container {
-    margin-top: 12px;
-  }
+.form-label {
+  color: var(--text-color);
 }
 </style>

@@ -144,16 +144,14 @@ export default {
       try {
         const active = await getActive();
         if (active) {
-          // Use active typography only as preview/default values, not edit target.
           form.h1_size = parseInt(active.h1_size) || form.h1_size;
           form.h2_size = parseInt(active.h2_size) || form.h2_size;
           form.p_size = parseInt(active.p_size) || form.p_size;
           form.font_title_name = active.font_title_name || form.font_title_name;
           form.font_body_name = active.font_body_name || form.font_body_name;
-          // if backend provides font data or paths, you'd register them here
         }
       } catch (err) {
-        // ignore load errors
+        console.error('Failed to load active typography', err);
       }
     }
 
@@ -163,7 +161,6 @@ export default {
       () => props.editingTypography,
       (font) => {
         if (!font || !font.id) {
-          // Exit edit mode and avoid stale id causing accidental updates.
           form.id = null;
           form.name = '';
           form.font_title_file = null;
