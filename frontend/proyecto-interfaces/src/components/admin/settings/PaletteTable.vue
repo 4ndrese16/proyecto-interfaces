@@ -1,10 +1,15 @@
 <template>
   <div class="palette-table">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5>Paletas guardadas</h5>
+      <button class="btn btn-sm btn-outline-primary" @click="load" :disabled="loading">Recargar</button>
+    </div>
+
     <div class="row">
       <!-- Palettes list -->
       <div class="col-12">
         <div class="table-responsive">
-          <table ref="dataTable" class="table table-striped table-hover table-sm mb-0" style="width:100%">
+          <table :key="tableRenderKey" ref="dataTable" class="table table-striped table-hover table-sm mb-0" style="width:100%">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -89,7 +94,7 @@
 import { getPublic, getAll, deletePalette, getDefault, getById, setDefaultPalette, setDarkPalette, setDaltonicPalette } from '../../../api/colorPalette';
 import { useColorStore } from '@/stores/colorStore'
 import 'datatables.net-dt/css/dataTables.dataTables.min.css';
-import 'datatables.net-dt';
+import DataTable from 'datatables.net-dt';
 
 export default {
   name: 'PaletteTable',
@@ -113,6 +118,8 @@ export default {
       showingToast: false,
       toastMessage: '',
       toastType: 'info',
+      mountedReady: false,
+      tableRenderKey: 0,
       swatchKeys: ['main_bg_color', 'secondary_color', 'accent_color', 'text_color', 'alternate_text_color'],
       // per-row pending actions map: { [id]: { default: bool, dark: bool, daltonic: bool, delete: bool } }
       pendingMap: {}
@@ -130,16 +137,12 @@ export default {
     getDefault(this.apiBase).then(d => { if (d && d.id) this.defaultId = d.id; }).catch(() => {});
   },
   mounted() {
-    // try to initialize jQuery DataTable if available
-    this.$nextTick(() => {
-      try {
-        if (window.$ && window.$.fn && window.$.fn.dataTable) {
-          this._dt = window.$(this.$refs.dataTable).DataTable();
-        }
-      } catch (e) {
-        // ignore
-      }
-    });
+    this.mountedReady = true;
+    if (this.palettes.length) {
+      this.$nextTick(() => {
+        this.rebuildDataTable();
+      });
+    }
   },
   methods: {
     async load() {
@@ -173,16 +176,12 @@ export default {
               this.defaultId = serverDefault2 ? serverDefault2.id : null;
             }
           } catch (e) {}
-        // reload datatable if present
-        this.$nextTick(() => {
-          try {
-            if (this._dt && window.$ && window.$.fn && window.$.fn.dataTable) {
-              this._dt.clear();
-              this._dt.rows.add(this.palettes);
-              this._dt.draw();
-            }
-          } catch (e) {}
-        });
+        // rebuild datatable from rendered DOM rows
+        if (this.mountedReady) {
+          this.$nextTick(() => {
+            this.rebuildDataTable();
+          });
+        }
       } catch (err) {
         this.error = err && err.message ? err.message : String(err);
       } finally {
@@ -451,6 +450,50 @@ export default {
       this.showingToast = true;
       setTimeout(() => { this.showingToast = false; }, 3000);
     },
+    initDataTable() {
+      try {
+        this._dt = new DataTable(this.$refs.dataTable, {
+          searching: true,
+          lengthChange: true,
+          info: true,
+          paging: true,
+          ordering: false,
+          pageLength: 10,
+          lengthMenu: [5, 10, 25, 50],
+          language: {
+            search: 'Buscar:',
+            lengthMenu: 'Mostrar _MENU_ registros',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+            infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+            zeroRecords: 'No se encontraron resultados',
+            paginate: {
+              first: 'Primero',
+              last: 'Ultimo',
+              next: 'Siguiente',
+              previous: 'Anterior'
+            }
+          }
+        });
+      } catch (e) {
+        // ignore
+      }
+    },
+    rebuildDataTable() {
+      try {
+        if (this._dt) {
+          this._dt.destroy();
+          this._dt = null;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      this.tableRenderKey += 1;
+
+      this.$nextTick(() => {
+        this.initDataTable();
+      });
+    },
     // small wrappers to call API helpers (injected via import at top)
     async $apiDelete(id) { return await deletePalette(id, this.apiBase); },
     async $apiSetDefault(id) { return await setDefaultPalette(id, this.apiBase); },
@@ -514,25 +557,25 @@ export default {
   border: 1px solid var(--alternate-text-color);
 }
 
-.btn-outline-primary {
+.btn-outline-primary, .btn-secondary {
   border: 1px solid var(--accent-color);
   background-color: var(--main-bg-color);
   color: var(--accent-color);
 }
 
-.btn-outline-primary:hover {
+.btn-outline-primary:hover, .btn-secondary:hover {
   background: var(--accent-color);
   color: var(--alternate-text-color);
   border: 1px solid var(--accent-color);
 }
 
-.btn-outline-danger, .btn-outline-danger:disabled {
+.btn-outline-danger, .btn-outline-danger:disabled, .btn-danger {
   border: 1px solid var(--alternate-text-color);
   background-color: var(--secondary-color);
   color: var(--alternate-text-color);
 }
 
-.btn-outline-danger:hover {
+.btn-outline-danger:hover, .btn-danger:hover {
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);

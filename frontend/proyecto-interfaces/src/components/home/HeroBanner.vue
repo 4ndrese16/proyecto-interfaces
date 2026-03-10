@@ -11,9 +11,9 @@
                   <div class="container">
                      <div class="carousel-caption">
                         <div class="text-bg">
-                           <h1> <span class="blu">Welcome <br></span>To Our Sunglasses</h1>
-                           <figure><img src="@/assets/images/banner_img.png" alt="#"/></figure>
-                           <a class="read_more" href="#">Shop Now</a>
+                           <h1> <span class="blu">Bienvenido <br></span>a nuestros equipos</h1>
+                           <figure><img src="@/assets/images/interfaces/xiaomi_15_ultra.png" alt="#"/></figure>
+                           <a class="read_more" href="#">Comprar ahora</a>
                         </div>
                      </div>
                   </div>
@@ -22,9 +22,9 @@
                   <div class="container">
                      <div class="carousel-caption">
                         <div class="text-bg">
-                           <h1> <span class="blu">Welcome <br></span>To Our Sunglasses</h1>
-                           <figure><img src="@/assets/images/banner_img.png" alt="#"/></figure>
-                           <a class="read_more" href="#">Shop Now</a>
+                           <h1> <span class="blu">Bienvenido <br></span>a nuestros equipos</h1>
+                           <figure><img src="@/assets/images/interfaces/xiaomi_15_ultra.png" alt="#"/></figure>
+                           <a class="read_more" href="#">Comprar ahora</a>
                         </div>
                      </div>
                   </div>

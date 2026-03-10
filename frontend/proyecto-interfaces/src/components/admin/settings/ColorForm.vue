@@ -12,8 +12,8 @@
         <!-- Form controls -->
         <div class="col-12 col-md-6">
           <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input class="form-control" v-model="form.name" placeholder="Palette name" />
+            <label class="form-label">Nombre</label>
+            <input class="form-control" v-model="form.name" placeholder="Nombre de la Paleta" />
           </div>
 
           <div class="row">
@@ -91,11 +91,11 @@ export default {
     return {
       // map of the five color fields matching the CSS variables in style.css
       colorFields: {
-        main_bg_color: 'Main background',
-        secondary_color: 'Secondary color',
-        accent_color: 'Accent color',
-        text_color: 'Text color',
-        alternate_text_color: 'Alternate text color'
+        main_bg_color: 'Fondo principal',
+        secondary_color: 'Color secundario',
+        accent_color: 'Color de contraste',
+        text_color: 'Color del texto',
+        alternate_text_color: 'Color alternativo del texto'
       },
       form: {
         id: this.modelValue.id || null,

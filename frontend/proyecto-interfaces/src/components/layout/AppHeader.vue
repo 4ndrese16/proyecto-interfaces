@@ -7,7 +7,7 @@
                      <div class="full">
                         <div class="center-desk">
                            <div class="logo">
-                              <a href="index.html"><img src="@/assets/images/logo.png" alt="#" /></a>
+                              <a href="index.html"><img src="@/assets/images/interfaces/logo_intefaces_sf.png" alt="Estudio Phone" style="width: 12rem" /></a>
                            </div>
                         </div>
                      </div>
@@ -20,23 +20,23 @@
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                            <ul class="navbar-nav mr-auto">
                               <li class="nav-item active">
-                                 <router-link class="nav-link" to="/">Home</router-link>
+                                 <router-link class="nav-link" to="/">Inicio</router-link>
                               </li>
                               <li class="nav-item">
-                                 <a class="nav-link" href="about.html">About</a>
+                                 <router-link class="nav-link" to="/">Sobre Nosotros</router-link>
                               </li>
                               <li class="nav-item">
-                                 <a class="nav-link" href="glasses.html">Our Glasses</a>
+                                 <router-link class="nav-link" to="/">Nuestros equipos</router-link>
                               </li>
                               <li class="nav-item">
-                                 <a class="nav-link" href="shop.html">Shop</a>
+                                 <router-link class="nav-link" to="/">Tienda</router-link>
                               </li>
                               <li v-if="isAdmin" class="nav-item">
                                  <router-link class="nav-link" to="/admin">Admin</router-link>
                               </li>
                                  <li class="nav-item dropdown me-2">
                                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                       👁️ Ver paletas
+                                       <i class="fas fa-eye me-2"></i>
                                     </a>
                                     <ul class="dropdown-menu">
                                        <li v-if="palStore.defaultPalette"><a class="dropdown-item" href="#" @click.prevent="apply('default')">Default</a></li>
@@ -46,10 +46,10 @@
                                     </ul>
                                  </li>
                               <li class="nav-item d_none login_btn">
-                                 <a class="nav-link" href="#">Login</a>
+                                 <router-link class="nav-link" to="/">Login</router-link>
                               </li>
                               <li class="nav-item d_none">
-                                 <a class="nav-link" href="#">Register</a>
+                                 <router-link class="nav-link" to="/">Registrarse</router-link>
                               </li>
                            </ul>
                         </div>

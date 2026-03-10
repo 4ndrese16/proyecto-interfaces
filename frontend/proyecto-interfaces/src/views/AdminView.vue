@@ -48,7 +48,7 @@
                             <div v-show="subTab === 'typography'">
                                 <div class="row">
                                     <div class="col-12 mb-3">
-                                        <FontForm @saved="onFontSaved" />
+                                        <FontForm :editingTypography="editingFont" @saved="onFontSaved" />
                                     </div>
                                     <div class="col-12">
                                         <FontTable ref="fontTable" @edit="onEditFont" />
@@ -80,6 +80,7 @@ import App from '@/App.vue';
 const activeTab = ref('config');
 const subTab = ref('palette');
 const editingPaletteId = ref(null);
+const editingFont = ref(null);
 
 function onEditPalette(palette) {
     editingPaletteId.value = palette && palette.id ? palette.id : null;
@@ -104,7 +105,7 @@ function onPaletteSaved() {
 }
 
 function onEditFont(font) {
-    // reserved for future edit workflow
+    editingFont.value = font || null;
 }
 
 function onFontSaved() {
@@ -118,6 +119,8 @@ function onFontSaved() {
         const fs = useFontStore();
         fs.load(false);
     } catch (e) {}
+
+    editingFont.value = null;
 
 }
 </script>

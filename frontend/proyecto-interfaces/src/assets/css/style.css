@@ -798,7 +798,7 @@ button {
      background: var(--secondary-color);
      padding-top: 90px;
      text-align: center;
-     font-family: 'Roboto', sans-serif;
+     font-family: var(--font-family-body);
 }
 
 ul.location_icon {

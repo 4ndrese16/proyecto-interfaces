@@ -4,13 +4,20 @@
       <div class="row">
         <div class="col-12 col-md-6">
           <div class="mb-3">
-            <label class="form-label">Fuente para títulos (.ttf)</label>
-            <input type="file" accept=".ttf" class="form-control" @change="onFileChange($event, 'title')" />
+            <label class="form-label">Nombre del set tipografico</label>
+            <input type="text" class="form-control" v-model.trim="form.name" placeholder="Ej: Elegante Serif" />
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Fuente para cuerpo (subtítulos, párrafos, botones) (.ttf)</label>
-            <input type="file" accept=".ttf" class="form-control" @change="onFileChange($event, 'body')" />
+            <label class="form-label">Fuente para títulos y subtítulos (.ttf)</label>
+            <input type="file" accept=".ttf" class="form-control" @change="onFileChange($event, 'title')" :disabled="isEditing" />
+            <small v-if="isEditing" class="text-muted">Deshabilitado: en esta pantalla solo se editan tamaños.</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Fuente para cuerpo (párrafos, botones) (.ttf)</label>
+            <input type="file" accept=".ttf" class="form-control" @change="onFileChange($event, 'body')" :disabled="isEditing" />
+            <small v-if="isEditing" class="text-muted">Deshabilitado: en esta pantalla solo se editan tamaños.</small>
           </div>
 
           <div class="mb-3">
@@ -59,15 +66,24 @@
 </template>
 
 <script>
-import { ref, reactive } from 'vue';
+import { computed, ref, reactive, watch } from 'vue';
 import { createTypography, updateTypography, getActive } from '../../../api/typography';
 
 export default {
   name: 'FontForm',
+  props: {
+    editingTypography: {
+      type: Object,
+      default: null
+    }
+  },
   emits: ['saved'],
-  setup(_props, { emit }) {
+  setup(props, { emit }) {
+    const isEditing = computed(() => !!props.editingTypography?.id);
+
     const form = reactive({
       id: null,
+      name: '',
       h1_size: 24,
       h2_size: 18,
       p_size: 15,
@@ -128,7 +144,7 @@ export default {
       try {
         const active = await getActive();
         if (active) {
-          form.id = active.id || null;
+          // Use active typography only as preview/default values, not edit target.
           form.h1_size = parseInt(active.h1_size) || form.h1_size;
           form.h2_size = parseInt(active.h2_size) || form.h2_size;
           form.p_size = parseInt(active.p_size) || form.p_size;
@@ -143,11 +159,37 @@ export default {
 
     loadActive();
 
+    watch(
+      () => props.editingTypography,
+      (font) => {
+        if (!font || !font.id) {
+          // Exit edit mode and avoid stale id causing accidental updates.
+          form.id = null;
+          form.name = '';
+          form.font_title_file = null;
+          form.font_body_file = null;
+          return;
+        }
+
+        form.id = font.id;
+        form.name = font.name || '';
+        form.h1_size = parseInt(font.h1_size, 10) || form.h1_size;
+        form.h2_size = parseInt(font.h2_size, 10) || form.h2_size;
+        form.p_size = parseInt(font.p_size, 10) || form.p_size;
+        form.font_title_name = font.font_title_name || form.font_title_name;
+        form.font_body_name = font.font_body_name || form.font_body_name;
+        form.font_title_file = null;
+        form.font_body_file = null;
+      },
+      { immediate: true }
+    );
+
     async function save() {
       saving.value = true;
       serverError.value = null;
       try {
         const payload = new FormData();
+        payload.append('name', form.name || '');
         payload.append('h1_size', String(form.h1_size));
         payload.append('h2_size', String(form.h2_size));
         payload.append('p_size', String(form.p_size));
@@ -162,8 +204,8 @@ export default {
           payload.append('body_file', form.font_body_file);
         }
 
-        if (form.id) {
-          await updateTypography(form.id, payload);
+        if (isEditing.value && props.editingTypography?.id) {
+          await updateTypography(props.editingTypography.id, payload);
         } else {
           await createTypography(payload);
         }
@@ -179,15 +221,27 @@ export default {
     }
 
     function reset() {
-      form.h1_size = 24;
-      form.h2_size = 18;
-      form.p_size = 15;
+      if (isEditing.value && props.editingTypography?.id) {
+        form.id = props.editingTypography.id;
+        form.name = props.editingTypography.name || '';
+        form.h1_size = parseInt(props.editingTypography.h1_size, 10) || 24;
+        form.h2_size = parseInt(props.editingTypography.h2_size, 10) || 18;
+        form.p_size = parseInt(props.editingTypography.p_size, 10) || 15;
+      } else {
+        form.id = null;
+        form.name = '';
+        form.h1_size = 24;
+        form.h2_size = 18;
+        form.p_size = 15;
+      }
+
       form.font_title_file = null;
       form.font_body_file = null;
       // optionally unregister injected fonts
     }
 
     return {
+      isEditing,
       form,
       onFileChange,
       save,

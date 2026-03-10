@@ -11,13 +11,12 @@
     <div v-if="!loading && items.length === 0" class="text-muted">No hay sets de tipografías guardados.</div>
 
     <div v-if="items.length" class="table-responsive">
-      <table ref="dataTable" class="table table-striped table-sm align-middle" style="width:100%">
+      <table :key="tableRenderKey" ref="dataTable" class="table table-striped table-sm align-middle" style="width:100%">
         <thead>
           <tr>
             <th>Seleccionar</th>
             <th>Nombre / ID</th>
             <th>Tamaños (h1 / h2 / p)</th>
-            <th>Vista previa</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -30,22 +29,15 @@
               </div>
             </td>
             <td>
-              <div><strong>{{ item.name || ('Set #' + item.id) }}</strong></div>
+              <div :style="nameStyle(item)"><strong>{{ item.name || ('Set #' + item.id) }}</strong></div>
               <div class="text-muted small">{{ item.font_title_name || 'Título' }} / {{ item.font_body_name || 'Cuerpo' }}</div>
             </td>
             <td>
               <div>{{ item.h1_size }}px / {{ item.h2_size }}px / {{ item.p_size }}px</div>
             </td>
-            <td style="min-width:240px;">
-              <div class="preview-sm p-2 rounded" :style="previewStyle(item)">
-                <div :style="previewTitleStyle(item)">Título</div>
-                <div :style="previewSubtitleStyle(item)">Subtítulo</div>
-                <div :style="previewParagraphStyle(item)" class="mt-1">Párrafo de ejemplo</div>
-              </div>
-            </td>
             <td style="width:150px;">
               <button class="btn btn-sm btn-outline-secondary me-2" @click="edit(item)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="remove(item)" :disabled="deletingId===item.id">Eliminar</button>
+              <button class="btn btn-sm btn-danger" @click="remove(item)" :disabled="deletingId===item.id || items.length <= 1">Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -85,7 +77,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useFontStore } from '@/stores/fontStore';
 import 'datatables.net-dt/css/dataTables.dataTables.min.css';
-import 'datatables.net-dt';
+import DataTable from 'datatables.net-dt';
 
 const API_ROOT = (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_API_URL || import.meta.env?.API_URL))
   || (typeof process !== 'undefined' && process.env.API_URL)
@@ -109,6 +101,8 @@ export default {
     const pendingDelete = ref(null);
     const showConfirm = ref(false);
     const dataTable = ref(null);
+    const mountedReady = ref(false);
+    const tableRenderKey = ref(0);
     let dt = null;
     const toast = ref({ show: false, message: '', type: 'info' });
 
@@ -121,7 +115,9 @@ export default {
         activeId.value = fontStore.activeId;
         // register fonts for preview if data provided
         items.value.forEach(registerFontsForItem);
-        redrawDataTable();
+        if (mountedReady.value) {
+          rebuildDataTable();
+        }
       } catch (err) {
         error.value = (err && err.message) || 'Error cargando sets de tipografías';
       } finally {
@@ -170,23 +166,9 @@ export default {
       document.head.appendChild(tag);
     }
 
-    function previewStyle(item) {
-      return { background: 'var(--main-bg-color)', color: 'var(--text-color)' };
-    }
-
-    function previewTitleStyle(item) {
+    function nameStyle(item) {
       const family = item._registeredTitle || item.font_title_name || 'inherit';
-      return { fontFamily: family, fontSize: (item.h1_size ? item.h1_size + 'px' : '20px'), fontWeight: '600' };
-    }
-
-    function previewSubtitleStyle(item) {
-      const family = item._registeredTitle || item.font_title_name || 'inherit';
-      return { fontFamily: family, fontSize: (item.h2_size ? item.h2_size + 'px' : '16px'), color: 'rgba(0,0,0,0.7)' };
-    }
-
-    function previewParagraphStyle(item) {
-      const family = item._registeredBody || item.font_body_name || 'inherit';
-      return { fontFamily: family, fontSize: (item.p_size ? item.p_size + 'px' : '14px') };
+      return { fontFamily: family, fontSize: (item.h2_size ? item.h2_size + 'px' : '16px') };
     }
 
     async function selectActive(id) {
@@ -196,7 +178,7 @@ export default {
         await fontStore.setAsActive(id);
         activeId.value = id;
         items.value = Array.isArray(fontStore.items) ? [...fontStore.items] : items.value;
-        redrawDataTable();
+        rebuildDataTable();
         emit('updated', { activeId: id });
         showToast('Tipografia activa actualizada', 'success');
       } catch (err) {
@@ -211,12 +193,22 @@ export default {
     }
 
     function remove(item) {
+      if (items.value.length <= 1) {
+        showToast('Debe existir al menos un set tipografico', 'info');
+        return;
+      }
       pendingDelete.value = item;
       showConfirm.value = true;
     }
 
     async function confirmDelete() {
       if (!pendingDelete.value) return;
+      if (items.value.length <= 1) {
+        showToast('Debe existir al menos un set tipografico', 'info');
+        pendingDelete.value = null;
+        showConfirm.value = false;
+        return;
+      }
       const targetId = pendingDelete.value.id;
 
       deletingId.value = targetId;
@@ -234,7 +226,7 @@ export default {
         deletingId.value = null;
         pendingDelete.value = null;
         showConfirm.value = false;
-        redrawDataTable();
+        rebuildDataTable();
       }
     }
 
@@ -252,22 +244,45 @@ export default {
 
     function initDataTable() {
       try {
-        if (window.$ && window.$.fn && window.$.fn.dataTable && dataTable.value) {
-          dt = window.$(dataTable.value).DataTable();
-        }
+        if (!dataTable.value) return;
+        dt = new DataTable(dataTable.value, {
+          searching: true,
+          lengthChange: true,
+          info: true,
+          paging: true,
+          ordering: false,
+          pageLength: 10,
+          lengthMenu: [5, 10, 25, 50],
+          language: {
+            search: 'Buscar:',
+            lengthMenu: 'Mostrar _MENU_ registros',
+            info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+            infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+            zeroRecords: 'No se encontraron resultados',
+            paginate: {
+              first: 'Primero',
+              last: 'Ultimo',
+              next: 'Siguiente',
+              previous: 'Anterior'
+            }
+          }
+        });
       } catch (e) {
         // ignore datatable init issues; plain table remains functional
       }
     }
 
-    function redrawDataTable() {
-      if (!dt) return;
+    function rebuildDataTable() {
       try {
-        dt.destroy();
-        dt = null;
+        if (dt) {
+          dt.destroy();
+          dt = null;
+        }
       } catch (e) {
         // ignore
       }
+
+      tableRenderKey.value += 1;
 
       setTimeout(() => {
         initDataTable();
@@ -276,8 +291,9 @@ export default {
 
     onMounted(() => {
       loadAll();
+      mountedReady.value = true;
       setTimeout(() => {
-        initDataTable();
+        if (items.value.length) initDataTable();
       }, 0);
     });
 
@@ -295,10 +311,7 @@ export default {
       error,
       activeId,
       selectActive,
-      previewStyle,
-      previewTitleStyle,
-      previewSubtitleStyle,
-      previewParagraphStyle,
+      nameStyle,
       edit,
       remove,
       loadAll,
@@ -309,6 +322,7 @@ export default {
       confirmDelete,
       cancelDelete,
       dataTable,
+      tableRenderKey,
       toast
     };
   }
@@ -316,15 +330,13 @@ export default {
 </script>
 
 <style scoped>
-.preview-sm { border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-
-.btn-outline-secondary, .btn-outline-primary {
+.btn-outline-secondary, .btn-outline-primary, .btn-secondary {
   border: 1px solid var(--accent-color);
   background-color: var(--main-bg-color);
   color: var(--accent-color);
 }
 
-.btn-outline-secondary:hover, .btn-outline-primary:hover {
+.btn-outline-secondary:hover, .btn-secondary:hover {
   background: var(--accent-color);
   color: var(--alternate-text-color);
   border: 1px solid var(--accent-color);
