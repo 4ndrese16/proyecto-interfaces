@@ -20,42 +20,37 @@
             <div class="col-6 col-sm-4 mb-3" v-for="(label, key) in colorFields" :key="key">
               <label class="form-label" :for="key">{{ label }}</label>
               <div class="d-flex align-items-center">
-                <input type="color" class="form-control form-control-color p-0" :id="key" v-model="form[key]" @input="onColorChange(key, $event.target.value)" style="width:48px;height:38px;border:none;padding:0;margin-right:8px;" />
-                <input class="form-control form-control-sm" v-model="form[key]" @input="onColorChange(key, $event.target.value)" />
+                <input type="color" class="form-control form-control-color p-0" :id="key" v-model="form[key]"
+                  @input="onColorChange(key, $event.target.value)"
+                  style="width:48px;height:38px;border:none;padding:0;margin-right:8px; border: 1px solid var(--text-color)" />
+                <input class="form-control form-control-sm" v-model="form[key]"
+                  @input="onColorChange(key, $event.target.value)" />
               </div>
             </div>
           </div>
 
           <div class="d-flex gap-2 mt-3">
-            <button class="btn btn-success" type="submit" :disabled="saving">
+            <button class="btn btn-success save" type="submit" :disabled="saving">
               <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               Guardar paleta
             </button>
-            <button class="btn btn-outline-secondary" type="button" @click="reset" :disabled="saving">Reset</button>
+            <button class="btn btn-outline-secondary reset" type="button" @click="reset" :disabled="saving">Reset</button>
           </div>
 
-          <div class="form-check form-switch mt-3">
-            <input class="form-check-input" type="checkbox" id="isPublic" v-model="form.is_public">
-            <label class="form-check-label" for="isPublic">Hacer pública (visible en listado público)</label>
-          </div>
+          <!-- is_public control removed per request: table-only workflow -->
         </div>
 
         <!-- Preview -->
         <div class="col-12 col-md-6 mt-4 mt-md-0">
           <div class="preview-container p-3" :style="{ background: form.main_bg_color }">
-            <div class="preview-header p-2 mb-3 rounded" :style="{ background: form.secondary_color, color: form.alternate_text_color }">
-              <h5 class="m-0">{{ form.name || 'Palette preview' }}</h5>
-            </div>
-
-            <div class="preview-card p-3 rounded" :style="{ background: form.main_bg_color, color: form.text_color, border: '1px solid rgba(0,0,0,0.06)' }">
-              <h6>Product title</h6>
-              <p class="small mb-3">Short description to preview the text color and spacing. This area uses the card background and text color.</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <strong style="display:block">$19.99</strong>
-                  <small class="text-muted">A short tag</small>
-                </div>
-                <button class="btn btn-primary" :style="{ background: form.accent_color, color: buttonTextColor, border: 'none' }">Buy</button>
+            <div class="card preview-card p-2 mb-3 rounded"
+              :style="{background: form.main_bg_color, color: form.text_color}">
+              <div class="card-body">
+                <h3 class="card-header preview-header p-2 mb-3 rounded"
+                :style="{background: form.secondary_color, color: form.alternate_text_color}">Preview</h3>
+                <p class="card-text">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nesciunt assumenda eveniet natus itaque doloribus quasi quae sit ea hic tempore.</p>
+                <a href="#" class="btn"
+                :style="{background: form.accent_color, color: form.alternate_text_color}">Botón</a>
               </div>
             </div>
           </div>
@@ -105,7 +100,7 @@ export default {
       form: {
         id: this.modelValue.id || null,
         name: this.modelValue.name || '',
-        is_public: this.modelValue.is_public || false,
+        // is_public removed - public handling is not part of the form per new UX
         // defaults from src/assets/css/style.css :root
         main_bg_color: this.modelValue.main_bg_color || '#ffffff',
         secondary_color: this.modelValue.secondary_color || '#252525',
@@ -119,14 +114,14 @@ export default {
       successMessage: null
     };
   },
-    created() {
-      // On creation, optionally load palette from backend
-      if (this.paletteId) {
-        this.fetchById(this.paletteId);
-      } else if (this.loadDefault) {
-        this.fetchDefault();
-      }
-    },
+  created() {
+    // On creation, optionally load palette from backend
+    if (this.paletteId) {
+      this.fetchById(this.paletteId);
+    } else if (this.loadDefault) {
+      this.fetchDefault();
+    }
+  },
   watch: {
     form: {
       handler(newVal) {
@@ -144,6 +139,13 @@ export default {
         });
       },
       deep: true
+    }
+    ,
+    paletteId: {
+      handler(id) {
+        if (!id) return;
+        this.fetchById(id);
+      }
     }
   },
   computed: {
@@ -245,7 +247,6 @@ export default {
     reset() {
       this.form = {
         name: '',
-        is_public: false,
         main_bg_color: '#ffffff',
         secondary_color: '#252525',
         accent_color: '#03cafc',
@@ -261,19 +262,59 @@ export default {
 .preview-container {
   border-radius: 8px;
 }
+
 .preview-header {
   border-radius: 6px;
 }
+
 .preview-card {
   border-radius: 6px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.save {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: none;
+}
+
+.save:hover {
+  background: var(--accent-color);
+  filter: brightness(0.9);
+  border: none;
+  color: var(--alternate-text-color);
+}
+
+.reset {
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
+  background: var(--main-bg-color);
+}
+
+.reset:hover {
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--alternate-text-color);
+}
+
+.form-control{
+  background: var(--main-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
 }
 
 /* Small adjustments to keep color inputs tidy */
-input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type="color"]::-webkit-color-swatch { border: none; }
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
 
 @media (max-width: 575.98px) {
-  .preview-container { margin-top: 12px; }
+  .preview-container {
+    margin-top: 12px;
+  }
 }
 </style>

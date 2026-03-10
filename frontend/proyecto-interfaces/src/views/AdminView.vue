@@ -1,10 +1,10 @@
 <template>
     <AppHeader />
-    <div class="container-fluid py-4">
+    <div class="container-fluid py-4" style="background: var(--main-bg-color); color: var(--text-color);">
         <div class="row">
             <!-- Sidebar / Tabs -->
             <div class="col-12 col-lg-3 mb-3">
-                <div class="card h-100">
+                <div class="card h-100" style="background: var(--main-bg-color); color: var(--alternate-text-color);">
                     <div class="card-body">
                         <h5 class="card-title">Admin Dashboard</h5>
                         <p class="small text-muted">Selecciona un módulo</p>
@@ -29,7 +29,7 @@
 
             <!-- Content -->
             <div class="col-12 col-lg-9">
-                <div class="card">
+                <div class="card" style="background: var(--main-bg-color); color: var(--text-color);">
                     <div class="card-body">
                         <div v-show="activeTab === 'config'">
                             <h4 class="mb-3">Configuraciones</h4>
@@ -37,10 +37,10 @@
                             <div v-show="subTab === 'palette'">
                                 <div class="row">
                                     <div class="col-12 mb-3">
-                                        <ColorForm />
+                                        <ColorForm :paletteId="editingPaletteId" @saved="onPaletteSaved" />
                                     </div>
                                     <div class="col-12">
-                                        <PaletteTable :adminMode="true" />
+                                        <PaletteTable ref="paletteTable" :adminMode="true" @edit="onEditPalette" />
                                     </div>
                                 </div>
                             </div>
@@ -48,10 +48,10 @@
                             <div v-show="subTab === 'typography'">
                                 <div class="row">
                                     <div class="col-12 mb-3">
-                                        <FontForm />
+                                        <FontForm @saved="onFontSaved" />
                                     </div>
                                     <div class="col-12">
-                                        <FontTable />
+                                        <FontTable ref="fontTable" @edit="onEditFont" />
                                     </div>
                                 </div>
                             </div>
@@ -61,13 +61,17 @@
             </div>
         </div>
     </div>
+    <AppFooter />
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, getCurrentInstance } from 'vue';
+import { useColorStore } from '@/stores/colorStore'
+import { useFontStore } from '@/stores/fontStore';
 import ColorForm from '@/components/admin/settings/ColorForm.vue';
 import PaletteTable from '@/components/admin/settings/PaletteTable.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
+import AppFooter from '@/components/layout/AppFooter.vue';
 import FontForm from '@/components/admin/settings/FontForm.vue';
 import FontTable from '@/components/admin/settings/FontTable.vue';
 import App from '@/App.vue';
@@ -75,4 +79,59 @@ import App from '@/App.vue';
 // default tab on load: configuraciones and default submenu
 const activeTab = ref('config');
 const subTab = ref('palette');
+const editingPaletteId = ref(null);
+
+function onEditPalette(palette) {
+    editingPaletteId.value = palette && palette.id ? palette.id : null;
+}
+
+function onPaletteSaved() {
+    // refresh the PaletteTable via template ref and reload color store
+    const inst = getCurrentInstance();
+    try {
+        const tbl = inst && inst.refs && inst.refs.paletteTable;
+        // reload color store (admin mode) so global selections and header update
+        try {
+            const pal = useColorStore()
+            pal.load(true)
+        } catch (e) {
+            // ignore
+        }
+        if (tbl && typeof tbl.load === 'function') tbl.load();
+    } catch (e) {}
+    // clear editing id after save
+    editingPaletteId.value = null;
+}
+
+function onEditFont(font) {
+    // reserved for future edit workflow
+}
+
+function onFontSaved() {
+    const inst = getCurrentInstance();
+    try {
+        const tbl = inst && inst.refs && inst.refs.fontTable;
+        if (tbl && typeof tbl.loadAll === 'function') tbl.loadAll();
+    } catch (e) {}
+
+    try {
+        const fs = useFontStore();
+        fs.load(false);
+    } catch (e) {}
+
+}
 </script>
+
+<style scoped>
+.active{
+    background-color: var(--accent-color) !important;
+    border: none !important;
+    color: var(--alternate-text-color) !important;
+}
+
+.nav-link {
+    background: var(--main-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--text-color)
+}
+</style>

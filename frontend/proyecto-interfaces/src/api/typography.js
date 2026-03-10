@@ -8,8 +8,16 @@ const API_ROOT = (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_A
 const defaultBase = (API_ROOT ? API_ROOT.replace(/\/$/, '') : '') + '/typography';
 
 function createClient(baseURL = defaultBase) {
-  const client = axios.create({ baseURL, headers: { 'Content-Type': 'application/json' } });
-  client.interceptors.request.use(cfg => cfg, e => Promise.reject(e));
+  const client = axios.create({ baseURL });
+  client.interceptors.request.use(cfg => {
+    try {
+      const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('token') : null;
+      if (token) cfg.headers = { ...(cfg.headers || {}), Authorization: `Bearer ${token}` };
+    } catch (e) {
+      // ignore auth header errors
+    }
+    return cfg;
+  }, e => Promise.reject(e));
   client.interceptors.response.use(r => r, e => Promise.reject(e));
   return client;
 }
@@ -33,13 +41,19 @@ export async function getAll(apiBase = defaultBase) {
 
 export async function createTypography(payload, apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.post('/', payload);
+  const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+  const res = await client.post('/', payload, {
+    headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
+  });
   return mapFromBackend(res.data);
 }
 
 export async function updateTypography(id, payload, apiBase = defaultBase) {
   const client = createClient(apiBase);
-  const res = await client.put(`/${id}`, payload);
+  const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+  const res = await client.put(`/${id}`, payload, {
+    headers: isFormData ? undefined : { 'Content-Type': 'application/json' }
+  });
   return mapFromBackend(res.data);
 }
 
@@ -49,4 +63,10 @@ export async function setActive(id, apiBase = defaultBase) {
   return res.data;
 }
 
-export default { getActive, getAll, createTypography, updateTypography, setActive };
+export async function deleteTypography(id, apiBase = defaultBase) {
+  const client = createClient(apiBase);
+  const res = await client.delete(`/${id}`);
+  return res.data;
+}
+
+export default { getActive, getAll, createTypography, updateTypography, setActive, deleteTypography };

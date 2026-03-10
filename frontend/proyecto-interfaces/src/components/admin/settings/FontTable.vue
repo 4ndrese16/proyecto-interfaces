@@ -11,7 +11,7 @@
     <div v-if="!loading && items.length === 0" class="text-muted">No hay sets de tipografías guardados.</div>
 
     <div v-if="items.length" class="table-responsive">
-      <table class="table table-striped table-sm align-middle">
+      <table ref="dataTable" class="table table-striped table-sm align-middle" style="width:100%">
         <thead>
           <tr>
             <th>Seleccionar</th>
@@ -51,39 +51,77 @@
         </tbody>
       </table>
     </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" :class="{ show: showConfirm }" :style="{ display: showConfirm ? 'block' : 'none' }">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirmar eliminacion</h5>
+            <button type="button" class="btn-close" aria-label="Close" @click="cancelDelete"></button>
+          </div>
+          <div class="modal-body">
+            <p>Quieres eliminar <strong>{{ pendingDelete?.name || ('Set #' + pendingDelete?.id) }}</strong>?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="cancelDelete">Cancelar</button>
+            <button type="button" class="btn btn-danger" @click="confirmDelete" :disabled="deletingId===pendingDelete?.id">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="toast.show" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1060;">
+      <div class="toast show align-items-center text-white" :class="toast.type === 'danger' ? 'bg-danger' : toast.type === 'success' ? 'bg-success' : 'bg-info'" role="alert">
+        <div class="d-flex">
+          <div class="toast-body">{{ toast.message }}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" @click="toast.show=false"></button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { getAll, getActive, setActive } from '../../../api/typography';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useFontStore } from '@/stores/fontStore';
+import 'datatables.net-dt/css/dataTables.dataTables.min.css';
+import 'datatables.net-dt';
+
+const API_ROOT = (typeof import.meta !== 'undefined' && (import.meta.env?.VITE_API_URL || import.meta.env?.API_URL))
+  || (typeof process !== 'undefined' && process.env.API_URL)
+  || '';
+
+const API_ORIGIN = API_ROOT
+  ? API_ROOT.replace(/\/api\/?$/, '').replace(/\/$/, '')
+  : '';
 
 export default {
   name: 'FontTable',
-  emits: ['edit', 'updated'],
+  emits: ['edit', 'updated', 'delete'],
   setup(props, { emit }) {
+    const fontStore = useFontStore();
     const items = ref([]);
     const loading = ref(false);
     const error = ref(null);
     const activeId = ref(null);
     const settingActive = ref(false);
     const deletingId = ref(null);
+    const pendingDelete = ref(null);
+    const showConfirm = ref(false);
+    const dataTable = ref(null);
+    let dt = null;
+    const toast = ref({ show: false, message: '', type: 'info' });
 
     async function loadAll() {
       loading.value = true;
       error.value = null;
       try {
-        const res = await getAll();
-        items.value = Array.isArray(res) ? res : [];
-        // try to get active
-        try {
-          const a = await getActive();
-          activeId.value = a && a.id ? a.id : null;
-        } catch (err) {
-          // ignore
-        }
+        await fontStore.load(true);
+        items.value = Array.isArray(fontStore.items) ? [...fontStore.items] : [];
+        activeId.value = fontStore.activeId;
         // register fonts for preview if data provided
         items.value.forEach(registerFontsForItem);
+        redrawDataTable();
       } catch (err) {
         error.value = (err && err.message) || 'Error cargando sets de tipografías';
       } finally {
@@ -93,19 +131,34 @@ export default {
 
     function registerFontsForItem(item) {
       try {
-        if (item.font_title_data) {
+        const titleSource = resolveFontSource(item.font_title_data, item.font_title_path);
+        const bodySource = resolveFontSource(item.font_body_data, item.font_body_path);
+
+        if (titleSource) {
           const titleName = `${item.font_title_name || 'TitleFont'}-${item.id}`;
-          addFontToDocument(titleName, item.font_title_data, `font-title-${item.id}`);
+          addFontToDocument(titleName, titleSource, `font-title-${item.id}`);
           item._registeredTitle = titleName;
         }
-        if (item.font_body_data) {
+
+        if (bodySource) {
           const bodyName = `${item.font_body_name || 'BodyFont'}-${item.id}`;
-          addFontToDocument(bodyName, item.font_body_data, `font-body-${item.id}`);
+          addFontToDocument(bodyName, bodySource, `font-body-${item.id}`);
           item._registeredBody = bodyName;
         }
       } catch (e) {
         // ignore registration errors
       }
+    }
+
+    function resolveFontSource(dataValue, pathValue) {
+      if (dataValue) return dataValue;
+      if (!pathValue) return null;
+
+      if (/^https?:\/\//i.test(pathValue)) return pathValue;
+      if (pathValue.startsWith('/')) {
+        return API_ORIGIN ? `${API_ORIGIN}${pathValue}` : pathValue;
+      }
+      return API_ORIGIN ? `${API_ORIGIN}/${pathValue}` : `/${pathValue}`;
     }
 
     function addFontToDocument(name, dataUrl, styleId) {
@@ -140,9 +193,12 @@ export default {
       if (settingActive.value) return;
       settingActive.value = true;
       try {
-        await setActive(id);
+        await fontStore.setAsActive(id);
         activeId.value = id;
+        items.value = Array.isArray(fontStore.items) ? [...fontStore.items] : items.value;
+        redrawDataTable();
         emit('updated', { activeId: id });
+        showToast('Tipografia activa actualizada', 'success');
       } catch (err) {
         error.value = (err && err.message) || 'Error al seleccionar tipografía activa';
       } finally {
@@ -155,12 +211,82 @@ export default {
     }
 
     function remove(item) {
-      // deletion not implemented in API helper yet; emit for parent to handle or implement later
-      emit('delete', item);
+      pendingDelete.value = item;
+      showConfirm.value = true;
+    }
+
+    async function confirmDelete() {
+      if (!pendingDelete.value) return;
+      const targetId = pendingDelete.value.id;
+
+      deletingId.value = targetId;
+      error.value = null;
+      try {
+        await fontStore.remove(targetId);
+        items.value = items.value.filter((x) => x.id !== targetId);
+        activeId.value = fontStore.activeId;
+        emit('delete', { id: targetId });
+        emit('updated', { activeId: activeId.value });
+        showToast('Tipografia eliminada', 'success');
+      } catch (err) {
+        error.value = (err && err.message) || 'Error eliminando tipografia';
+      } finally {
+        deletingId.value = null;
+        pendingDelete.value = null;
+        showConfirm.value = false;
+        redrawDataTable();
+      }
+    }
+
+    function cancelDelete() {
+      pendingDelete.value = null;
+      showConfirm.value = false;
+    }
+
+    function showToast(message, type = 'info') {
+      toast.value = { show: true, message, type };
+      setTimeout(() => {
+        toast.value.show = false;
+      }, 2600);
+    }
+
+    function initDataTable() {
+      try {
+        if (window.$ && window.$.fn && window.$.fn.dataTable && dataTable.value) {
+          dt = window.$(dataTable.value).DataTable();
+        }
+      } catch (e) {
+        // ignore datatable init issues; plain table remains functional
+      }
+    }
+
+    function redrawDataTable() {
+      if (!dt) return;
+      try {
+        dt.destroy();
+        dt = null;
+      } catch (e) {
+        // ignore
+      }
+
+      setTimeout(() => {
+        initDataTable();
+      }, 0);
     }
 
     onMounted(() => {
       loadAll();
+      setTimeout(() => {
+        initDataTable();
+      }, 0);
+    });
+
+    onBeforeUnmount(() => {
+      try {
+        if (dt) dt.destroy();
+      } catch (e) {
+        // ignore
+      }
     });
 
     return {
@@ -177,7 +303,13 @@ export default {
       remove,
       loadAll,
       settingActive,
-      deletingId
+      deletingId,
+      pendingDelete,
+      showConfirm,
+      confirmDelete,
+      cancelDelete,
+      dataTable,
+      toast
     };
   }
 };
@@ -185,4 +317,28 @@ export default {
 
 <style scoped>
 .preview-sm { border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+
+.btn-outline-secondary, .btn-outline-primary {
+  border: 1px solid var(--accent-color);
+  background-color: var(--main-bg-color);
+  color: var(--accent-color);
+}
+
+.btn-outline-secondary:hover, .btn-outline-primary:hover {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--accent-color);
+}
+
+.btn-danger {
+  border: 1px solid var(--alternate-text-color);
+  background-color: var(--secondary-color);
+  color: var(--alternate-text-color);
+}
+
+.btn-danger:hover {
+  background: var(--main-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+}
 </style>

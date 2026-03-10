@@ -75,6 +75,12 @@ export async function getPublic(apiBase = defaultBase) {
   return Array.isArray(res.data) ? res.data.map(mapFromBackend) : [];
 }
 
+export async function getSelected(apiBase = defaultBase) {
+  const client = createClient(apiBase);
+  const res = await client.get('/selected');
+  return Array.isArray(res.data) ? res.data.map(mapFromBackend) : [];
+}
+
 export async function getAll(apiBase = defaultBase) {
   const client = createClient(apiBase);
   const res = await client.get('/');
@@ -103,9 +109,51 @@ export async function updatePalette(id, payload, apiBase = defaultBase) {
   return mapFromBackend(res.data);
 }
 
+export async function deletePalette(id, apiBase = defaultBase) {
+  if (!id) throw new Error('id required');
+  const client = createClient(apiBase);
+  const res = await client.delete(`/${id}`);
+  return res.data;
+}
+
+export async function setDefaultPalette(id, apiBase = defaultBase) {
+  if (!id) throw new Error('id required');
+  const client = createClient(apiBase);
+  const res = await client.put(`/default/${id}`);
+  return res.data;
+}
+
+export async function setPublicPalette(id, apiBase = defaultBase) {
+  if (!id) throw new Error('id required');
+  const client = createClient(apiBase);
+  const res = await client.put(`/public/${id}`);
+  return res.data;
+}
+
+export async function setDarkPalette(id, apiBase = defaultBase) {
+  if (!id) throw new Error('id required');
+  const client = createClient(apiBase);
+  const res = await client.put(`/dark/${id}`);
+  return res.data;
+}
+
+export async function setDaltonicPalette(id, apiBase = defaultBase) {
+  if (!id) throw new Error('id required');
+  const client = createClient(apiBase);
+  const res = await client.put(`/daltonic/${id}`);
+  return res.data;
+}
+
 export default {
   getDefault,
   getById,
+  getPublic,
+  getAll,
   createPalette,
-  updatePalette
+  updatePalette,
+  deletePalette,
+  setDefaultPalette,
+  setPublicPalette,
+  setDarkPalette,
+  setDaltonicPalette
 };

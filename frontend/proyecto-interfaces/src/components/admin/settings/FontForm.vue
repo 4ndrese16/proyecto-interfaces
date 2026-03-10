@@ -32,11 +32,12 @@
           </div>
 
           <div class="d-flex gap-2">
-            <button class="btn btn-primary" :disabled="saving" type="submit">
+            <button class="btn btn-primary save" :disabled="saving" type="submit">
               <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
               Guardar tipografía
             </button>
-            <button class="btn btn-outline-secondary" type="button" @click="reset" :disabled="saving">Reset</button>
+            <button class="btn btn-outline-secondary reset" type="button" @click="reset"
+              :disabled="saving">Reset</button>
           </div>
 
           <div v-if="serverError" class="alert alert-danger mt-3">{{ serverError }}</div>
@@ -47,7 +48,8 @@
           <div class="preview-card p-3 rounded" :style="previewCardStyle()">
             <h1 :style="previewTitleStyle()">Ejemplo de título</h1>
             <h2 :style="previewSubtitleStyle()">Subtítulo de ejemplo</h2>
-            <p :style="previewParagraphStyle()">Este es un párrafo de ejemplo para ver el tamaño y la familia tipográfica seleccionada.</p>
+            <p :style="previewParagraphStyle()">Este es un párrafo de ejemplo para ver el tamaño y la familia
+              tipográfica seleccionada.</p>
             <button class="btn mt-3" :style="previewButtonStyle()">Botón</button>
           </div>
         </div>
@@ -62,15 +64,15 @@ import { createTypography, updateTypography, getActive } from '../../../api/typo
 
 export default {
   name: 'FontForm',
-  setup() {
+  emits: ['saved'],
+  setup(_props, { emit }) {
     const form = reactive({
       id: null,
       h1_size: 24,
       h2_size: 18,
       p_size: 15,
-      // store data URLs for fonts temporarily
-      font_title_data: null,
-      font_body_data: null,
+      font_title_file: null,
+      font_body_file: null,
       font_title_name: 'TitleFont',
       font_body_name: 'BodyFont'
     });
@@ -104,11 +106,13 @@ export default {
       const reader = new FileReader();
       reader.onload = () => {
         if (which === 'title') {
-          form.font_title_data = reader.result;
-          registerFont(form.font_title_name, form.font_title_data);
+          form.font_title_file = file;
+          form.font_title_name = file.name.replace(/\.ttf$/i, '') || 'TitleFont';
+          registerFont(form.font_title_name, reader.result);
         } else {
-          form.font_body_data = reader.result;
-          registerFont(form.font_body_name, form.font_body_data);
+          form.font_body_file = file;
+          form.font_body_name = file.name.replace(/\.ttf$/i, '') || 'BodyFont';
+          registerFont(form.font_body_name, reader.result);
         }
       };
       reader.readAsDataURL(file);
@@ -128,6 +132,8 @@ export default {
           form.h1_size = parseInt(active.h1_size) || form.h1_size;
           form.h2_size = parseInt(active.h2_size) || form.h2_size;
           form.p_size = parseInt(active.p_size) || form.p_size;
+          form.font_title_name = active.font_title_name || form.font_title_name;
+          form.font_body_name = active.font_body_name || form.font_body_name;
           // if backend provides font data or paths, you'd register them here
         }
       } catch (err) {
@@ -141,27 +147,32 @@ export default {
       saving.value = true;
       serverError.value = null;
       try {
-        const payload = {
-          h1_size: String(form.h1_size),
-          h2_size: String(form.h2_size),
-          p_size: String(form.p_size),
-          font_title_name: form.font_title_name,
-          font_body_name: form.font_body_name,
-          font_title_data: form.font_title_data,
-          font_body_data: form.font_body_data
-        };
+        const payload = new FormData();
+        payload.append('h1_size', String(form.h1_size));
+        payload.append('h2_size', String(form.h2_size));
+        payload.append('p_size', String(form.p_size));
+        payload.append('font_title_name', form.font_title_name);
+        payload.append('font_body_name', form.font_body_name);
 
-        let res;
+        if (form.font_title_file) {
+          payload.append('title_file', form.font_title_file);
+        }
+
+        if (form.font_body_file) {
+          payload.append('body_file', form.font_body_file);
+        }
+
         if (form.id) {
-          res = await updateTypography(form.id, payload);
+          await updateTypography(form.id, payload);
         } else {
-          res = await createTypography(payload);
+          await createTypography(payload);
         }
 
         successMessage.value = 'Tipografía guardada correctamente';
+        emit('saved');
         setTimeout(() => (successMessage.value = null), 3000);
       } catch (err) {
-        serverError.value = err && err.message ? err.message : String(err);
+        serverError.value = err?.response?.data?.message || err?.message || String(err);
       } finally {
         saving.value = false;
       }
@@ -171,8 +182,8 @@ export default {
       form.h1_size = 24;
       form.h2_size = 18;
       form.p_size = 15;
-      form.font_title_data = null;
-      form.font_body_data = null;
+      form.font_title_file = null;
+      form.font_body_file = null;
       // optionally unregister injected fonts
     }
 
@@ -195,5 +206,45 @@ export default {
 </script>
 
 <style scoped>
-.preview-card { border-radius: 6px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+.preview-card {
+  border-radius: 6px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+}
+
+.save {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: none;
+}
+
+.save:hover {
+  background: var(--accent-color);
+  filter: brightness(0.9);
+  border: none;
+  color: var(--alternate-text-color);
+}
+
+.reset {
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
+  background: var(--main-bg-color);
+}
+
+.reset:hover {
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--alternate-text-color);
+}
+
+.form-control {
+  background: var(--main-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+}
+
+#file-upload-button {
+  background: var(--main-bg-color) !important;
+  color: var(--text-color) !important;
+  border: 1px solid var(--text-color) !important;
+}
 </style>

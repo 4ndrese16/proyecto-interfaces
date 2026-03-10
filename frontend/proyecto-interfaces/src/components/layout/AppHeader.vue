@@ -20,7 +20,7 @@
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                            <ul class="navbar-nav mr-auto">
                               <li class="nav-item active">
-                                 <a class="nav-link" href="index.html">Home</a>
+                                 <router-link class="nav-link" to="/">Home</router-link>
                               </li>
                               <li class="nav-item">
                                  <a class="nav-link" href="about.html">About</a>
@@ -34,6 +34,17 @@
                               <li v-if="isAdmin" class="nav-item">
                                  <router-link class="nav-link" to="/admin">Admin</router-link>
                               </li>
+                                 <li class="nav-item dropdown me-2">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                       👁️ Ver paletas
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                       <li v-if="palStore.defaultPalette"><a class="dropdown-item" href="#" @click.prevent="apply('default')">Default</a></li>
+                                       <li v-if="palStore.darkPalette"><a class="dropdown-item" href="#" @click.prevent="apply('dark')">Modo Oscuro</a></li>
+                                       <li v-if="palStore.daltonicPalette"><a class="dropdown-item" href="#" @click.prevent="apply('daltonic')">Modo Daltónico</a></li>
+                                       <li v-if="!palStore.defaultPalette && !palStore.darkPalette && !palStore.daltonicPalette"><span class="dropdown-item text-muted">No hay paletas asignadas</span></li>
+                                    </ul>
+                                 </li>
                               <li class="nav-item d_none login_btn">
                                  <a class="nav-link" href="#">Login</a>
                               </li>
@@ -51,8 +62,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { getToken } from '@/api/auth';
+import { useColorStore } from '@/stores/colorStore'
+
+const palStore = useColorStore()
+
+const hasAnySelection = computed(() => {
+   return !!(palStore.defaultId || palStore.darkId || palStore.daltonicId)
+})
 
 const isAdmin = ref(false);
 
@@ -83,9 +101,30 @@ function checkRole() {
 onMounted(() => {
    checkRole();
    window.addEventListener('storage', checkRole);
+   // ensure palettes loaded for header display
+   palStore.load(false)
 });
 
 onBeforeUnmount(() => {
    window.removeEventListener('storage', checkRole);
 });
+
+function apply(mode) {
+   palStore.applyMode(mode)
+}
 </script>
+
+<style scoped>
+.dropdown-menu {
+   background-color: var(--main-bg-color);
+}
+
+.dropdown-item {
+   color: var(--text-color);
+}
+
+.dropdown-item:hover {
+   background-color: var(--secondary-color);
+   color: var(--alternate-text-color);
+}
+</style>

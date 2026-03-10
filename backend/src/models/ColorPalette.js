@@ -22,6 +22,15 @@ const ColorPalette = sequelize.define('ColorPalette', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   }
+  ,
+  is_dark: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  is_daltonic: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 });
 
 module.exports = ColorPalette;

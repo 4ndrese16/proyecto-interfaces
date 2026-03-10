@@ -7,6 +7,11 @@ const Typography = sequelize.define('Typography', {
     allowNull: false
   },
 
+  font_title_name: DataTypes.STRING,
+  font_body_name: DataTypes.STRING,
+  font_title_path: DataTypes.STRING,
+  font_body_path: DataTypes.STRING,
+
   font_family: DataTypes.STRING,
   font_file_path: DataTypes.STRING,
 

@@ -1,5 +1,5 @@
 <template>
-    <section class="main-banner">
+    <section class="banner_main">
         <div id="banner1" class="carousel slide" data-ride="carousel">
             <ol class="carousel-indicators">
                <li data-target="#banner1" data-slide-to="0" class="active"></li>
