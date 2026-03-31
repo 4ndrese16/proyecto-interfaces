@@ -6,7 +6,7 @@
             <div class="col-12 col-lg-3 mb-3">
                 <div class="card h-100" style="background: var(--main-bg-color); color: var(--alternate-text-color);">
                     <div class="card-body">
-                        <h5 class="card-title">Admin Dashboard</h5>
+                        <h2 class="card-title">Admin Dashboard</h2>
                         <p class="small text-muted">Selecciona un módulo</p>
                         <ul class="nav nav-pills flex-column mt-3" role="tablist">
                             <li class="nav-item mb-2" role="presentation">
@@ -18,6 +18,12 @@
                                     </li>
                                     <li class="nav-item mb-1">
                                         <button :class="['nav-link p-1', subTab === 'typography' ? 'active' : '']" @click="subTab = 'typography'" type="button">Tipografías</button>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <button :class="['nav-link p-1', subTab === 'products' ? 'active' : '']" @click="subTab = 'products'" type="button">Productos</button>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <button :class="['nav-link p-1', subTab === 'fiscal' ? 'active' : '']" @click="subTab = 'fiscal'" type="button">Facturación</button>
                                     </li>
                                     <!-- future submenu items -->
                                 </ul>
@@ -55,6 +61,28 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-show="subTab === 'products'">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <ProductForm :productId="editingProductId" @saved="onProductSaved" />
+                                    </div>
+                                    <div class="col-12">
+                                        <ProductTable ref="productTable" @edit="onEditProduct" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-show="subTab === 'fiscal'">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <CompanyFiscalForm />
+                                    </div>
+                                    <div class="col-12">
+                                        <PrinterProfileForm />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,6 +102,10 @@ import AppHeader from '@/components/layout/AppHeader.vue';
 import AppFooter from '@/components/layout/AppFooter.vue';
 import FontForm from '@/components/admin/settings/FontForm.vue';
 import FontTable from '@/components/admin/settings/FontTable.vue';
+import ProductForm from '@/components/shop/productForm.vue';
+import ProductTable from '@/components/shop/ProductTable.vue';
+import CompanyFiscalForm from '@/components/admin/settings/CompanyFiscalForm.vue';
+import PrinterProfileForm from '@/components/admin/settings/PrinterProfileForm.vue';
 
 // default tab on load: configuraciones and default submenu
 const activeTab = ref('config');
@@ -82,6 +114,8 @@ const editingPaletteId = ref(null);
 const editingFont = ref(null);
 const paletteTableKey = ref(0);
 const fontTable = ref(null);
+const productTable = ref(null);
+const editingProductId = ref(null);
 
 function onEditPalette(palette) {
     editingPaletteId.value = palette && palette.id ? palette.id : null;
@@ -120,6 +154,24 @@ async function onFontSaved() {
     try {
         if (fontTable.value && typeof fontTable.value.loadAll === 'function') {
             await fontTable.value.loadAll();
+        }
+    } catch (e) {
+        // ignore
+    }
+}
+
+function onEditProduct(product) {
+    editingProductId.value = product?.id || null;
+}
+
+async function onProductSaved() {
+    editingProductId.value = null;
+
+    await nextTick();
+
+    try {
+        if (productTable.value && typeof productTable.value.loadAll === 'function') {
+            await productTable.value.loadAll();
         }
     } catch (e) {
         // ignore

@@ -17,7 +17,7 @@
       >
         <swiper-slide v-for="item in products" :key="item.id">
           <div class="product-slide">
-            <ProductCard />
+            <ProductCard :product="item" />
           </div>
         </swiper-slide>
       </swiper>
@@ -26,7 +26,9 @@
 </template>
 
 <script setup>
+import { onMounted, ref } from 'vue';
 import ProductCard from '@/components/shop/ProductCard.vue';
+import { getAllProducts } from '@/api/product';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -40,14 +42,16 @@ const breakpoints = {
   992: { slidesPerView: 3 }
 };
 
-const products = [
-  { id: 1 },
-  { id: 2 },
-  { id: 3 },
-  { id: 4 },
-  { id: 5 },
-  { id: 6 }
-];
+const products = ref([]);
+
+onMounted(async () => {
+  try {
+    const list = await getAllProducts();
+    products.value = Array.isArray(list) ? list.slice(0, 12) : [];
+  } catch (_error) {
+    products.value = [];
+  }
+});
 </script>
 
 <style scoped>

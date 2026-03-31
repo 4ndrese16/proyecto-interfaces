@@ -59,7 +59,7 @@ async function onSubmit() {
   try {
     await register({ username: form.username, password: form.password });
   success.value = 'Cuenta creada. Redirigiendo...';
-  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/admin';
+  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
   setTimeout(() => router.push(redirectTo), 800);
   } catch (err) {
     error.value = (err && err.response && err.response.data && err.response.data.message) || (err && err.message) || 'Error al crear cuenta';

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "create-admin": "node scripts/create_admin.js"
+    "create-admin": "node scripts/create_admin.js",
+    "seed-demo-product": "node scripts/create_demo_product.js"
   },
   "keywords": [],
   "author": "",

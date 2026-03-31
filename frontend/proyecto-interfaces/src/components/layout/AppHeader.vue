@@ -23,10 +23,10 @@
                                  <router-link class="nav-link" to="/">Inicio</router-link>
                               </li>
                               <li class="nav-item">
-                                 <router-link class="nav-link" to="/">Sobre Nosotros</router-link>
+                                 <router-link class="nav-link" to="/catalogo">Catálogo</router-link>
                               </li>
                               <li class="nav-item">
-                                 <router-link class="nav-link" to="/">Nuestros equipos</router-link>
+                                 <router-link class="nav-link" to="/carrito">Carrito de Compras <span v-if="cartCount" class="cart-badge">{{ cartCount }}</span></router-link>
                               </li>
                               <li class="nav-item">
                                  <router-link class="nav-link" to="/">Tienda</router-link>
@@ -45,11 +45,14 @@
                                        <li v-if="!palStore.defaultPalette && !palStore.darkPalette && !palStore.daltonicPalette"><span class="dropdown-item text-muted">No hay paletas asignadas</span></li>
                                     </ul>
                                  </li>
-                              <li class="nav-item d_none login_btn">
-                                 <router-link class="nav-link" to="/">Login</router-link>
+                              <li v-if="!isAuthenticated" class="nav-item d_none login_btn">
+                                 <router-link class="nav-link" to="/login">Login</router-link>
                               </li>
-                              <li class="nav-item d_none">
-                                 <router-link class="nav-link" to="/">Registrarse</router-link>
+                              <li v-if="!isAuthenticated" class="nav-item d_none">
+                                 <router-link class="nav-link" to="/register">Registrarse</router-link>
+                              </li>
+                              <li v-if="isAuthenticated" class="nav-item d_none">
+                                 <button class="nav-link logout-link" type="button" @click="handleLogout">Cerrar sesión</button>
                               </li>
                            </ul>
                         </div>
@@ -63,16 +66,23 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-import { getToken } from '@/api/auth';
+import { useRouter } from 'vue-router';
+import { getToken, logout } from '@/api/auth';
 import { useColorStore } from '@/stores/colorStore'
+import { useCartStore } from '@/stores/cartStore';
 
 const palStore = useColorStore()
+const cartStore = useCartStore();
+const router = useRouter();
 
 const hasAnySelection = computed(() => {
    return !!(palStore.defaultId || palStore.darkId || palStore.daltonicId)
 })
 
+const cartCount = computed(() => cartStore.totalItems);
+
 const isAdmin = ref(false);
+const isAuthenticated = ref(false);
 
 function parseJwt(token) {
    try {
@@ -90,6 +100,8 @@ function parseJwt(token) {
 
 function checkRole() {
    const token = getToken();
+   isAuthenticated.value = !!token;
+
    if (!token) {
       isAdmin.value = false;
       return;
@@ -98,19 +110,32 @@ function checkRole() {
    isAdmin.value = payload && payload.role === 'admin';
 }
 
+function onAuthChanged() {
+   checkRole();
+   cartStore.load();
+}
+
 onMounted(() => {
    checkRole();
    window.addEventListener('storage', checkRole);
+   window.addEventListener('auth-changed', onAuthChanged);
    // ensure palettes loaded for header display
    palStore.load(false)
+   cartStore.load()
 });
 
 onBeforeUnmount(() => {
    window.removeEventListener('storage', checkRole);
+   window.removeEventListener('auth-changed', onAuthChanged);
 });
 
 function apply(mode) {
    palStore.applyMode(mode)
+}
+
+function handleLogout() {
+   logout();
+   router.push('/login');
 }
 </script>
 
@@ -126,5 +151,26 @@ function apply(mode) {
 .dropdown-item:hover {
    background-color: var(--secondary-color);
    color: var(--alternate-text-color);
+}
+
+.cart-badge {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 18px;
+   height: 18px;
+   margin-left: 6px;
+   padding: 0 6px;
+   border-radius: 999px;
+   background: var(--accent-color);
+   color: var(--alternate-text-color);
+   font-size: 11px;
+   font-weight: 700;
+}
+
+.logout-link {
+   border: none;
+   background: transparent;
+   cursor: pointer;
 }
 </style>

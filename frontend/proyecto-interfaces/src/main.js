@@ -17,6 +17,7 @@ app.use(router)
 // preload public palettes into store so header can show selections
 import { useColorStore } from './stores/colorStore'
 import { useFontStore } from './stores/fontStore'
+import { useCartStore } from './stores/cartStore'
 const pinia = app._context.provides.pinia
 try {
 	const palStore = useColorStore(pinia)
@@ -28,6 +29,13 @@ try {
 try {
 	const fontStore = useFontStore(pinia)
 	fontStore.load(false)
+} catch (e) {
+	// ignore on startup
+}
+
+try {
+	const cartStore = useCartStore(pinia)
+	cartStore.load()
 } catch (e) {
 	// ignore on startup
 }

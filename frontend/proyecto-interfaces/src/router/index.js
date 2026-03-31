@@ -3,6 +3,10 @@ import LoginView from '@/views/LoginView.vue'
 import HomeView from '@/views/HomeView.vue'
 import AdminView from '@/views/AdminView.vue'
 import RegisterView from '@/views/RegisterView.vue'
+import ReceiptDemoView from '@/views/ReceiptDemoView.vue'
+import CatalogView from '@/views/CatalogView.vue'
+import ProductDetailView from '@/views/ProductDetailView.vue'
+import CartView from '@/views/CartView.vue'
 import { getToken } from '@/api/auth';
 
 function parseJwt(token) {
@@ -25,7 +29,11 @@ const router = createRouter({
     { path: '/', component: HomeView },
     { path: '/login', component: LoginView },
     { path: '/admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
-    { path: '/register', component: RegisterView }
+    { path: '/register', component: RegisterView },
+    { path: '/receipt-demo', component: ReceiptDemoView },
+    { path: '/catalogo', component: CatalogView },
+    { path: '/producto/:id', component: ProductDetailView },
+    { path: '/carrito', component: CartView, meta: { requiresAuth: true } }
   ],
 })
 
@@ -35,14 +43,14 @@ router.beforeEach((to, from, next) => {
   if (!to.meta || !to.meta.requiresAuth) return next();
 
   if (!token) {
-    return next({ path: '/', query: { redirect: to.fullPath } });
+    return next({ path: '/login', query: { redirect: to.fullPath } });
   }
 
   // If route requires admin, verify role in token
   if (to.meta.requiresAdmin) {
     const payload = parseJwt(token);
     if (!payload || payload.role !== 'admin') {
-      return next({ path: '/', query: { redirect: to.fullPath } });
+      return next({ path: '/login', query: { redirect: to.fullPath } });
     }
   }
 

@@ -98,20 +98,20 @@ h2 {
 }
 
 h3 {
-     font-size: calc(var(--h2-size));
+     font-size: calc(var(--h2-size) - 2px);
      font-family: var(--font-family-title);
 }
 
 h4 {
-     font-size: 16px
+     font-size: calc(var(--h2-size) - 4px);
 }
 
 h5 {
-     font-size: 14px
+     font-size: calc(var(--h2-size) - 6px);
 }
 
 h6 {
-     font-size: 13px
+     font-size: calc(var(--h2-size) - 7px);
 }
 
 *,

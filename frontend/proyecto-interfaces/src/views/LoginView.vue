@@ -48,8 +48,8 @@ async function onSubmit() {
   error.value = null;
   try {
     await login({ username: form.username, password: form.password });
-  // redirect to requested path or to admin
-  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/admin';
+  // redirect to requested path or to catalog
+  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
   router.push(redirectTo);
   } catch (err) {
     error.value = (err && err.response && err.response.data && err.response.data.message) || (err && err.message) || 'Error al iniciar sesión';
