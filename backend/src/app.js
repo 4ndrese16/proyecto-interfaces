@@ -15,6 +15,9 @@ app.use('/api/typography', require('./routes/typographyRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/company-profile', require('./routes/companyProfileRoutes'));
 app.use('/api/printer-profile', require('./routes/printerProfileRoutes'));
+app.use('/api/coupons', require('./routes/couponRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/purchases', require('./routes/purchaseRoutes'));
 
 initDB();
 

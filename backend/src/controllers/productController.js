@@ -126,6 +126,7 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
 	try {
+		const product_code = sanitizeText(req.body.product_code).toUpperCase();
 		const name = sanitizeText(req.body.name);
 		const description = sanitizeText(req.body.description);
 		const category = normalizeCategory(req.body.category);
@@ -135,8 +136,13 @@ exports.create = async (req, res) => {
 		const has_discount = parseBoolean(req.body.has_discount);
 		const discount_percentage = parseDiscount(req.body.discount_percentage);
 
-		if (!name || !description || !brand || price === null) {
-			return res.status(400).json({ message: 'Nombre, descripcion, marca y precio son obligatorios' });
+		if (!product_code || !name || !description || !brand || price === null) {
+			return res.status(400).json({ message: 'Codigo, nombre, descripcion, marca y precio son obligatorios' });
+		}
+
+		const exists = await Product.findOne({ where: { product_code } });
+		if (exists) {
+			return res.status(409).json({ message: 'Ya existe un producto con ese codigo' });
 		}
 
 		if (!validCategories.has(category)) {
@@ -151,6 +157,7 @@ exports.create = async (req, res) => {
 		const main_image_path = toImagePath(req.files?.main_image?.[0]);
 
 		const product = await Product.create({
+			product_code,
 			name,
 			description,
 			price,
@@ -184,6 +191,18 @@ exports.update = async (req, res) => {
 			const name = sanitizeText(req.body.name);
 			if (!name) return res.status(400).json({ message: 'El nombre no puede estar vacio' });
 			payload.name = name;
+		}
+
+		if (req.body.product_code !== undefined) {
+			const product_code = sanitizeText(req.body.product_code).toUpperCase();
+			if (!product_code) return res.status(400).json({ message: 'El codigo del producto no puede estar vacio' });
+
+			const exists = await Product.findOne({ where: { product_code } });
+			if (exists && Number(exists.id) !== Number(product.id)) {
+				return res.status(409).json({ message: 'Ya existe un producto con ese codigo' });
+			}
+
+			payload.product_code = product_code;
 		}
 
 		if (req.body.description !== undefined) {

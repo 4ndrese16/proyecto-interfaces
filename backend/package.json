@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "create-admin": "node scripts/create_admin.js",
-    "seed-demo-product": "node scripts/create_demo_product.js"
+    "seed-demo-product": "node scripts/create_demo_product.js",
+    "seed-fiscal-data": "node scripts/seed_fiscal_data.js",
+    "seed-user-billing-data": "node scripts/seed_user_billing_data.js"
   },
   "keywords": [],
   "author": "",

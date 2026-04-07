@@ -43,6 +43,11 @@ exports.getSelected = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    const name = String(req.body?.name || '').trim();
+    if (!name) {
+      return res.status(400).json({ message: 'El nombre de la paleta es obligatorio' });
+    }
+
     const palette = await ColorPalette.create(req.body);
     // if this is the only palette, make it the default
     const total = await ColorPalette.count();
@@ -58,6 +63,11 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id } = req.params;
+
+  if (req.body?.name !== undefined && !String(req.body.name || '').trim()) {
+    return res.status(400).json({ message: 'El nombre de la paleta es obligatorio' });
+  }
+
   await ColorPalette.update(req.body, { where: { id } });
   res.json({ message: "Updated" });
 };

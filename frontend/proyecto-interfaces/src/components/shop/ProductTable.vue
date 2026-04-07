@@ -44,8 +44,8 @@
 							</div>
 						</td>
 						<td>
-							<span v-if="item.is_new" class="badge rounded-pill bg-success me-1">Nuevo</span>
-							<span v-if="item.has_discount" class="badge rounded-pill bg-danger">-{{ item.discount_percentage }}%</span>
+							<span v-if="item.is_new" class="badge badge-new rounded-pill me-1">Nuevo</span>
+							<span v-if="item.has_discount" class="badge badge-discount rounded-pill">-{{ item.discount_percentage }}%</span>
 							<span v-if="!item.is_new && !item.has_discount" class="text-muted">-</span>
 						</td>
 						<td>
@@ -55,7 +55,7 @@
 									:key="`${item.id}-${idx}`"
 									class="swatch"
 									:title="variant.color_name"
-									:style="{ background: variant.color_hex || '#d9d9d9' }"
+									:style="{ background: variant.color_hex || fallbackSwatchColor }"
 								/>
 							</div>
 							<div class="small text-muted">{{ (item.variants || []).length }} variantes</div>
@@ -116,6 +116,7 @@ export default {
 	name: 'ProductTable',
 	emits: ['edit', 'updated'],
 	setup(_props, { emit }) {
+		const fallbackSwatchColor = 'var(--secondary-color)';
 		const items = ref([]);
 		const loading = ref(false);
 		const error = ref(null);
@@ -270,6 +271,7 @@ export default {
 		});
 
 		return {
+			fallbackSwatchColor,
 			items,
 			loading,
 			error,
@@ -297,22 +299,33 @@ export default {
 	width: 64px;
 	height: 64px;
 	object-fit: contain;
-	border: 1px solid #ddd;
+	border: 1px solid var(--text-color);
 	border-radius: 6px;
-	background: #fff;
+	background: var(--main-bg-color);
 }
 
 .swatch {
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	border: 1px solid #999;
+	border: 1px solid var(--text-color);
 }
 
 .old-price {
 	text-decoration: line-through;
 	margin-right: 6px;
-	color: #777;
+	color: var(--text-color);
+	opacity: 0.75;
+}
+
+.badge-new {
+    background: var(--accent-color);
+    color: var(--alternate-text-color);
+}
+
+.badge-discount {
+    background: var(--secondary-color);
+    color: var(--alternate-text-color);
 }
 
 .new-price {

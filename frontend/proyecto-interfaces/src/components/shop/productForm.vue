@@ -7,6 +7,11 @@
 
 		<form @submit.prevent="saveProduct">
 			<div class="row g-3">
+				<div class="col-12 col-md-4">
+					<label class="form-label">Codigo del producto</label>
+					<input v-model.trim="form.product_code" class="form-control" type="text" placeholder="SKU-001" required />
+				</div>
+
 				<div class="col-12 col-md-6">
 					<label class="form-label">Nombre</label>
 					<input v-model.trim="form.name" class="form-control" type="text" required />
@@ -78,7 +83,7 @@
 
 					<div class="col-12 col-md-3">
 						<label class="form-label">Color HEX</label>
-						<input v-model.trim="variant.color_hex" class="form-control" type="text" placeholder="#1a1a1a" />
+						<input v-model="variant.color_hex" class="form-control form-control-color" type="color" />
 					</div>
 
 					<div class="col-12 col-md-4">
@@ -110,13 +115,14 @@ import { createProduct, updateProduct, getProductById } from '@/api/product';
 const createEmptyVariant = () => ({
 	uid: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
 	color_name: '',
-	color_hex: '',
+	color_hex: '#1a1a1a',
 	image_file: null,
 	existing_image_path: null
 });
 
 const createEmptyForm = () => ({
 	id: null,
+	product_code: '',
 	name: '',
 	description: '',
 	price: 0,
@@ -192,6 +198,7 @@ export default {
 
 				this.form = {
 					id: product.id,
+					product_code: product.product_code || '',
 					name: product.name || '',
 					description: product.description || '',
 					price: Number(product.price || 0),
@@ -206,7 +213,7 @@ export default {
 						? product.variants.map((variant) => ({
 							...createEmptyVariant(),
 							color_name: variant.color_name || '',
-							color_hex: variant.color_hex || '',
+							color_hex: variant.color_hex || '#1a1a1a',
 							existing_image_path: variant.image_path || null
 						}))
 						: []
@@ -217,6 +224,7 @@ export default {
 		},
 		buildPayload() {
 			const payload = new FormData();
+			payload.append('product_code', String(this.form.product_code || '').trim().toUpperCase());
 			payload.append('name', this.form.name);
 			payload.append('description', this.form.description);
 			payload.append('price', String(this.form.price));
@@ -301,6 +309,16 @@ export default {
 	background: var(--main-bg-color);
 	color: var(--text-color);
 	border: 1px solid var(--text-color);
+}
+
+.form-select{
+    margin-left: 0.5rem;
+}
+
+.form-check-input {
+    background: var(--main-bg-color);
+    border: 1px solid var(--text-color);
+    margin-left: -1rem;
 }
 
 .variant-row {

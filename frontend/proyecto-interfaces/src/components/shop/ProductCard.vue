@@ -26,7 +26,7 @@
                         class="swatch"
                         :class="{ active: idx === selectedVariantIndex }"
                         :title="variant.color_name"
-                        :style="{ background: variant.color_hex || '#d9d9d9' }"
+                        :style="{ background: variant.color_hex || fallbackSwatchColor }"
                         @click="selectedVariantIndex = idx"
                     />
                 </div>
@@ -41,6 +41,20 @@
                 >
                     Ver detalle
                 </router-link>
+            </div>
+
+            <div class="share-wrap mt-2" v-if="product.id">
+                <button class="btn btn-outline-secondary btn-sm" type="button" @click="toggleShareMenu">
+                    <i class="fas fa-share-alt me-1"></i> Compartir
+                </button>
+                <div v-if="showShareMenu" class="share-menu">
+                    <button class="share-item" type="button" @click="shareTelegram">
+                        <i class="fab fa-telegram-plane me-1"></i> Telegram
+                    </button>
+                    <button class="share-item" type="button" @click="shareWhatsapp">
+                        <i class="fab fa-whatsapp me-1"></i> WhatsApp
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -65,6 +79,8 @@ const router = useRouter();
 const route = useRoute();
 
 const selectedVariantIndex = ref(0);
+const showShareMenu = ref(false);
+const fallbackSwatchColor = 'var(--secondary-color)';
 
 const apiRoot = (import.meta.env?.VITE_API_URL || import.meta.env?.API_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
 
@@ -92,6 +108,17 @@ const shortDescription = computed(() => {
     return text.length > 88 ? `${text.slice(0, 88)}...` : text;
 });
 
+const productPublicUrl = computed(() => {
+    if (!props.product?.id) return '';
+    if (typeof window === 'undefined') return `/producto/${props.product.id}`;
+    return `${window.location.origin}/producto/${props.product.id}`;
+});
+
+const shareText = computed(() => {
+    const name = props.product?.name || 'Producto';
+    return `Mira este producto: ${name}`;
+});
+
 const money = (value) => {
     const amount = Number(value || 0);
     return amount.toLocaleString('es-BO', { style: 'currency', currency: 'BOB' });
@@ -110,6 +137,26 @@ const addToCart = () => {
         }
     }
 };
+
+const toggleShareMenu = () => {
+    showShareMenu.value = !showShareMenu.value;
+};
+
+const openShareUrl = (url) => {
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    showShareMenu.value = false;
+};
+
+const shareTelegram = () => {
+    const text = encodeURIComponent(`${shareText.value} ${productPublicUrl.value}`);
+    openShareUrl(`https://t.me/share/url?url=${encodeURIComponent(productPublicUrl.value)}&text=${text}`);
+};
+
+const shareWhatsapp = () => {
+    const text = encodeURIComponent(`${shareText.value} ${productPublicUrl.value}`);
+    openShareUrl(`https://wa.me/?text=${text}`);
+};
 </script>
 
 <style scoped>
@@ -126,32 +173,32 @@ const addToCart = () => {
 .card-img-top {
     height: 220px;
     object-fit: contain;
-    background: #fff;
+    background: var(--main-bg-color);
 }
 
 .badge {
     position: absolute;
     top: 10px;
     padding: 4px 10px;
-    font-size: 12px;
+    font-size: var(--p-size);
     border-radius: 999px;
 }
 
 .badge-new {
     left: 10px;
-    background: #198754;
-    color: #fff;
+    background: var(--accent-color);
+    color: var(--alternate-text-color);
 }
 
 .badge-discount {
     right: 10px;
-    background: #dc3545;
-    color: #fff;
+    background: var(--secondary-color);
+    color: var(--alternate-text-color);
 }
 
 .card-header {
     font-family: var(--font-family-title);
-    font-size: 1.15rem;
+    font-size: calc(var(--h2-size) - 1px);
     background: transparent;
     color: var(--text-color);
     padding: 0;
@@ -160,13 +207,13 @@ const addToCart = () => {
 }
 
 .product-meta {
-    font-size: 0.85rem;
+    font-size: calc(var(--p-size) - 1px);
     color: var(--text-color);
     opacity: 0.8;
 }
 
 .card-text {
-    font-size: 0.92rem;
+    font-size: var(--p-size);
 }
 
 .price-wrap {
@@ -178,12 +225,12 @@ const addToCart = () => {
 .old-price {
     text-decoration: line-through;
     opacity: 0.75;
-    font-size: 0.9rem;
+    font-size: var(--p-size);
 }
 
 .new-price {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: calc(var(--h2-size) - 2px);
 }
 
 .swatches {
@@ -196,7 +243,7 @@ const addToCart = () => {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    border: 1px solid #999;
+    border: 1px solid var(--text-color);
     cursor: pointer;
 }
 
@@ -227,5 +274,37 @@ const addToCart = () => {
     background: var(--secondary-color);
     color: var(--alternate-text-color);
     border: 1px solid var(--secondary-color);
+}
+
+.share-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.share-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    min-width: 165px;
+    border: 1px solid var(--text-color);
+    border-radius: 8px;
+    background: var(--main-bg-color);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    z-index: 6;
+}
+
+.share-item {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    text-align: left;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.share-item:hover {
+    background: var(--secondary-color);
+    color: var(--alternate-text-color);
 }
 </style>

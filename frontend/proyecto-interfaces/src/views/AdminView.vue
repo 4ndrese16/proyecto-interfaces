@@ -1,6 +1,6 @@
 <template>
     <AppHeader />
-    <div class="container-fluid py-4" style="background: var(--main-bg-color); color: var(--text-color);">
+    <div class="container-fluid py-4 admin-section" style="background: var(--main-bg-color); color: var(--text-color);">
         <div class="row">
             <!-- Sidebar / Tabs -->
             <div class="col-12 col-lg-3 mb-3">
@@ -24,6 +24,9 @@
                                     </li>
                                     <li class="nav-item mb-1">
                                         <button :class="['nav-link p-1', subTab === 'fiscal' ? 'active' : '']" @click="subTab = 'fiscal'" type="button">Facturación</button>
+                                    </li>
+                                    <li class="nav-item mb-1">
+                                        <button :class="['nav-link p-1', subTab === 'coupons' ? 'active' : '']" @click="subTab = 'coupons'" type="button">Cupones</button>
                                     </li>
                                     <!-- future submenu items -->
                                 </ul>
@@ -83,6 +86,14 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-show="subTab === 'coupons'">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <CouponManager />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -106,6 +117,7 @@ import ProductForm from '@/components/shop/productForm.vue';
 import ProductTable from '@/components/shop/ProductTable.vue';
 import CompanyFiscalForm from '@/components/admin/settings/CompanyFiscalForm.vue';
 import PrinterProfileForm from '@/components/admin/settings/PrinterProfileForm.vue';
+import CouponManager from '@/components/admin/settings/CouponManager.vue';
 
 // default tab on load: configuraciones and default submenu
 const activeTab = ref('config');
@@ -180,6 +192,10 @@ async function onProductSaved() {
 </script>
 
 <style scoped>
+.admin-section {
+    padding: 0 5rem;
+}
+
 .active{
     background-color: var(--accent-color) !important;
     border: none !important;

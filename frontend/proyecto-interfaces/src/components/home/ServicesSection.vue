@@ -88,13 +88,13 @@
 	align-items: center;
 	justify-content: center;
 	margin-bottom: 0.9rem;
-	font-size: 1.45rem;
+	font-size: calc(var(--h2-size) + 5px);
 	color: var(--alternate-text-color);
 	background: var(--accent-color);
 }
 
 .service-title {
-	font-size: 1.1rem;
+	font-size: calc(var(--h2-size) - 1px);
 	margin-bottom: 0.45rem;
 	color: var(--text-color);
 }

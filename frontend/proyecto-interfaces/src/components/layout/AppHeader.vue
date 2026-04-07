@@ -7,7 +7,7 @@
                      <div class="full">
                         <div class="center-desk">
                            <div class="logo">
-                              <a href="index.html"><img src="@/assets/images/interfaces/logo_intefaces_sf.png" alt="Estudio Phone" style="width: 12rem" /></a>
+                              <router-link to="/"><img src="@/assets/images/interfaces/logo_intefaces_sf.png" alt="Estudio Phone" style="width: 12rem" /></router-link>
                            </div>
                         </div>
                      </div>
@@ -25,14 +25,11 @@
                               <li class="nav-item">
                                  <router-link class="nav-link" to="/catalogo">Catálogo</router-link>
                               </li>
-                              <li class="nav-item">
-                                 <router-link class="nav-link" to="/carrito">Carrito de Compras <span v-if="cartCount" class="cart-badge">{{ cartCount }}</span></router-link>
-                              </li>
-                              <li class="nav-item">
-                                 <router-link class="nav-link" to="/">Tienda</router-link>
-                              </li>
                               <li v-if="isAdmin" class="nav-item">
                                  <router-link class="nav-link" to="/admin">Admin</router-link>
+                              </li>
+                              <li class="nav-item">
+                                 <router-link class="nav-link" to="/carrito"><i class="fas fa-shopping-cart me-2"></i><span v-if="cartCount" class="cart-badge">{{ cartCount }}</span></router-link>
                               </li>
                                  <li class="nav-item dropdown me-2">
                                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -50,6 +47,9 @@
                               </li>
                               <li v-if="!isAuthenticated" class="nav-item d_none">
                                  <router-link class="nav-link" to="/register">Registrarse</router-link>
+                              </li>
+                              <li v-if="isAuthenticated" class="nav-item d_none">
+                                 <router-link class="nav-link" to="/usuario"><i class="fas fa-user me-1"></i>Mi Cuenta</router-link>
                               </li>
                               <li v-if="isAuthenticated" class="nav-item d_none">
                                  <button class="nav-link logout-link" type="button" @click="handleLogout">Cerrar sesión</button>
@@ -164,7 +164,7 @@ function handleLogout() {
    border-radius: 999px;
    background: var(--accent-color);
    color: var(--alternate-text-color);
-   font-size: 11px;
+   font-size: calc(var(--p-size) - 4px);
    font-weight: 700;
 }
 

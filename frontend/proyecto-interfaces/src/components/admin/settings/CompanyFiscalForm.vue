@@ -26,7 +26,6 @@
           <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
           Guardar datos fiscales
         </button>
-        <button class="btn btn-outline-secondary" type="button" @click="load" :disabled="saving">Recargar</button>
       </div>
     </form>
   </div>

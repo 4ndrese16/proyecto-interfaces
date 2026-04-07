@@ -24,7 +24,7 @@
 
         <div class="col-12 col-md-6">
           <label class="form-label">Fecha de providencia</label>
-          <input v-model.trim="form.providence_date" class="form-control" type="text" placeholder="12022026" required />
+          <input v-model.trim="form.providence_date" class="form-control" type="text" placeholder="dd/mm/aaaa" required />
         </div>
 
         <div class="col-12 col-md-4">
@@ -39,16 +39,17 @@
 
         <div class="col-12 col-md-6">
           <label class="form-label">Fecha asignación control</label>
-          <input v-model.trim="form.control_assignment_date" class="form-control" type="text" placeholder="15032026" required />
+          <input v-model.trim="form.control_assignment_date" class="form-control" type="text" placeholder="dd/mm/aaaa" required />
         </div>
       </div>
+
+      <small class="text-muted d-block mt-2">Formato de fecha requerido: dd/mm/aaaa</small>
 
       <div class="d-flex gap-2 mt-3">
         <button class="btn btn-primary" type="submit" :disabled="saving">
           <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
           Guardar imprenta
         </button>
-        <button class="btn btn-outline-secondary" type="button" @click="load" :disabled="saving">Recargar</button>
       </div>
     </form>
   </div>
@@ -72,6 +73,13 @@ const saving = ref(false);
 const serverError = ref(null);
 const successMessage = ref(null);
 
+const toSlashDate = (value) => {
+  const raw = String(value || '').trim();
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 8) return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+  return raw;
+};
+
 const load = async () => {
   serverError.value = null;
   try {
@@ -79,10 +87,10 @@ const load = async () => {
     form.company_name = data?.company_name || '';
     form.rif = data?.rif || '';
     form.providence_code = data?.providence_code || '';
-    form.providence_date = data?.providence_date || '';
+    form.providence_date = toSlashDate(data?.providence_date || '');
     form.control_range_start = data?.control_range_start || '';
     form.control_range_end = data?.control_range_end || '';
-    form.control_assignment_date = data?.control_assignment_date || '';
+    form.control_assignment_date = toSlashDate(data?.control_assignment_date || '');
   } catch (e) {
     serverError.value = e?.response?.data?.message || e?.message || 'No se pudo cargar la imprenta';
   }
@@ -96,7 +104,9 @@ const save = async () => {
     await savePrinterProfile({
       ...form,
       rif: String(form.rif || '').toUpperCase(),
-      providence_code: String(form.providence_code || '').toUpperCase()
+      providence_code: String(form.providence_code || '').toUpperCase(),
+      providence_date: toSlashDate(form.providence_date),
+      control_assignment_date: toSlashDate(form.control_assignment_date)
     });
     successMessage.value = 'Datos de imprenta guardados correctamente';
     setTimeout(() => {

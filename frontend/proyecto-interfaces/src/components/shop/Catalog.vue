@@ -16,27 +16,27 @@
 					<div class="col-6 col-md-2">
 						<label class="form-label">Categoria</label>
 						<select v-model="category" class="form-select">
-							<option value="">Todas</option>
-							<option value="telefono">Telefonos</option>
-							<option value="accesorio">Accesorios</option>
+							<option class="dropdown-item" value="">Todas</option>
+							<option class="dropdown-item" value="telefono">Telefonos</option>
+							<option class="dropdown-item" value="accesorio">Accesorios</option>
 						</select>
 					</div>
 
 					<div class="col-6 col-md-2">
 						<label class="form-label">Marca</label>
 						<select v-model="brand" class="form-select">
-							<option value="">Todas</option>
-							<option v-for="b in availableBrands" :key="b" :value="b">{{ b }}</option>
+							<option class="dropdown-item" value="">Todas</option>
+							<option class="dropdown-item" v-for="b in availableBrands" :key="b" :value="b">{{ b }}</option>
 						</select>
 					</div>
 
 					<div class="col-8 col-md-2">
 						<label class="form-label">Ordenar por</label>
 						<select v-model="sortBy" class="form-select">
-							<option value="newest">Mas recientes</option>
-							<option value="priceAsc">Precio: menor a mayor</option>
-							<option value="priceDesc">Precio: mayor a menor</option>
-							<option value="nameAsc">Nombre A-Z</option>
+							<option class="dropdown-item" value="newest">Mas recientes</option>
+							<option class="dropdown-item" value="priceAsc">Precio: menor a mayor</option>
+							<option class="dropdown-item" value="priceDesc">Precio: mayor a menor</option>
+							<option class="dropdown-item" value="nameAsc">Nombre A-Z</option>
 						</select>
 					</div>
 
@@ -178,6 +178,7 @@ onMounted(load);
 .catalog-section {
 	background: var(--main-bg-color);
 	color: var(--text-color);
+    padding: 0 2rem;
 }
 
 .filters {
@@ -192,9 +193,69 @@ onMounted(load);
 	border: 1px solid var(--text-color);
 }
 
+.form-select{
+    margin-left: 0.5rem;
+}
+
+.dropdown-menu {
+   background-color: var(--main-bg-color);
+}
+
+.dropdown-item {
+   color: var(--text-color);
+}
+
+.dropdown-item:hover {
+   background-color: var(--secondary-color);
+   color: var(--alternate-text-color);
+}
+
 .btn-primary {
 	background: var(--accent-color);
 	color: var(--alternate-text-color);
 	border: none;
+}
+
+.btn-primary:hover {
+  background: var(--accent-color);
+  filter: brightness(0.9);
+  border: none;
+  color: var(--alternate-text-color);
+}
+
+.btn-outline-secondary {
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+  background: var(--main-bg-color);
+}
+
+.btn-outline-secondary:hover {
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--alternate-text-color);
+}
+
+.btn-outline-primary, .btn-secondary {
+  border: 1px solid var(--accent-color);
+  background-color: var(--main-bg-color);
+  color: var(--accent-color);
+}
+
+.btn-outline-primary:hover, .btn-secondary:hover {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--accent-color);
+}
+
+.btn-outline-danger, .btn-outline-danger:disabled, .btn-danger {
+  border: 1px solid var(--alternate-text-color);
+  background-color: var(--secondary-color);
+  color: var(--alternate-text-color);
+}
+
+.btn-outline-danger:hover, .btn-danger:hover {
+  background: var(--main-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
 }
 </style>

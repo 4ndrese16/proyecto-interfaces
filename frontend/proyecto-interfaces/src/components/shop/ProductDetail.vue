@@ -20,7 +20,7 @@
                 class="swatch"
                 :class="{ active: idx === selectedVariantIndex }"
                 :title="variant.color_name"
-                :style="{ background: variant.color_hex || '#d9d9d9' }"
+                :style="{ background: variant.color_hex || fallbackSwatchColor }"
                 @click="selectedVariantIndex = idx"
               />
             </div>
@@ -33,8 +33,8 @@
           <p class="meta mb-2">{{ product.brand }} • {{ categoryLabel }}</p>
 
           <div class="mb-3">
-            <span v-if="product.is_new" class="badge rounded-pill bg-success me-1">Nuevo</span>
-            <span v-if="product.has_discount" class="badge rounded-pill bg-danger">-{{ product.discount_percentage }}%</span>
+            <span v-if="product.is_new" class="badge badge-new rounded-pill me-1">Nuevo</span>
+            <span v-if="product.has_discount" class="badge badge-discount rounded-pill">-{{ product.discount_percentage }}%</span>
           </div>
 
           <div class="price-wrap mb-3">
@@ -67,6 +67,7 @@ const error = ref(null);
 const product = ref(null);
 const selectedVariantIndex = ref(0);
 const cartStore = useCartStore();
+const fallbackSwatchColor = 'var(--secondary-color)';
 
 const fallbackImage = new URL('@/assets/images/interfaces/xiaomi_15_ultra_product.png', import.meta.url).href;
 const apiRoot = (import.meta.env?.VITE_API_URL || import.meta.env?.API_URL || '').replace(/\/api\/?$/, '').replace(/\/$/, '');
@@ -138,7 +139,7 @@ onMounted(load);
 .image-box {
   border: 1px solid var(--text-color);
   border-radius: 8px;
-  background: #fff;
+  background: var(--main-bg-color);
   padding: 1rem;
 }
 
@@ -152,7 +153,7 @@ onMounted(load);
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 1px solid #999;
+  border: 1px solid var(--text-color);
   cursor: pointer;
 }
 
@@ -181,8 +182,18 @@ onMounted(load);
 }
 
 .new-price {
-  font-size: 1.25rem;
+  font-size: calc(var(--h2-size) + 2px);
   font-weight: 700;
+}
+
+.badge-new {
+    background: var(--accent-color);
+    color: var(--alternate-text-color);
+}
+
+.badge-discount {
+    background: var(--secondary-color);
+    color: var(--alternate-text-color);
 }
 
 .btn-primary {

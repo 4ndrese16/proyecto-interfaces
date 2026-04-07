@@ -10,7 +10,12 @@ function getItemUnitPrice(item) {
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
-    items: []
+    items: [],
+    appliedCoupon: null,
+    paymentPlan: {
+      mode: 'single',
+      installments: 1
+    }
   }),
 
   getters: {
@@ -40,9 +45,26 @@ export const useCartStore = defineStore('cart', {
       try {
         const raw = localStorage.getItem(key);
         const parsed = raw ? JSON.parse(raw) : [];
-        this.items = Array.isArray(parsed) ? parsed : [];
+
+        if (Array.isArray(parsed)) {
+          // backward compatibility for old format
+          this.items = parsed;
+          this.appliedCoupon = null;
+          this.paymentPlan = { mode: 'single', installments: 1 };
+        } else {
+          this.items = Array.isArray(parsed?.items) ? parsed.items : [];
+          this.appliedCoupon = parsed?.appliedCoupon || null;
+
+          const plan = parsed?.paymentPlan || {};
+          this.paymentPlan = {
+            mode: plan.mode === 'installments' ? 'installments' : 'single',
+            installments: Math.max(1, parseInt(plan.installments, 10) || 1)
+          };
+        }
       } catch (_e) {
         this.items = [];
+        this.appliedCoupon = null;
+        this.paymentPlan = { mode: 'single', installments: 1 };
       }
     },
 
@@ -51,7 +73,11 @@ export const useCartStore = defineStore('cart', {
       if (!key) return;
 
       try {
-        localStorage.setItem(key, JSON.stringify(this.items));
+        localStorage.setItem(key, JSON.stringify({
+          items: this.items,
+          appliedCoupon: this.appliedCoupon,
+          paymentPlan: this.paymentPlan
+        }));
       } catch (_e) {
         // ignore persistence errors
       }
@@ -110,8 +136,28 @@ export const useCartStore = defineStore('cart', {
       this.persist();
     },
 
+    applyCoupon(couponPayload) {
+      this.appliedCoupon = couponPayload || null;
+      this.persist();
+    },
+
+    clearCoupon() {
+      this.appliedCoupon = null;
+      this.persist();
+    },
+
+    setPaymentPlan(mode, installments = 1) {
+      this.paymentPlan = {
+        mode: mode === 'installments' ? 'installments' : 'single',
+        installments: Math.max(1, parseInt(installments, 10) || 1)
+      };
+      this.persist();
+    },
+
     clear() {
       this.items = [];
+      this.appliedCoupon = null;
+      this.paymentPlan = { mode: 'single', installments: 1 };
       this.persist();
     }
   }

@@ -44,6 +44,7 @@ async function main() {
     const existing = await Product.findOne({ where: { name: PRODUCT_NAME } });
 
     const payload = {
+      product_code: 'XIAOMI-15-ULTRA-DEMO',
       name: PRODUCT_NAME,
       description: 'Smartphone insignia de Xiaomi con camaras Leica y bateria de gran capacidad.',
       price: 9999.99,

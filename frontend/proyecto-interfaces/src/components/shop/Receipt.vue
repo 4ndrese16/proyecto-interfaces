@@ -1,43 +1,48 @@
 <template>
 	<section class="receipt-page">
-		<div class="receipt-actions no-print">
-			<button class="btn btn-primary" type="button" @click="printReceipt">Imprimir factura</button>
-		</div>
+		<div v-if="loading" class="alert alert-light border">Cargando factura...</div>
+		<div v-else-if="error" class="alert alert-danger">{{ error }}</div>
 
-		<article class="receipt-card" aria-label="Factura demo">
+		<template v-else-if="invoice">
+			<div class="receipt-actions no-print">
+				<button class="btn btn-outline-secondary" type="button" @click="goBack">Regresar</button>
+				<button class="btn btn-primary" type="button" @click="printReceipt">Imprimir factura</button>
+			</div>
+
+			<article class="receipt-card" aria-label="Factura">
 			<header class="receipt-header">
 				<div>
 					<h1 class="doc-title">FACTURA</h1>
-					<p class="doc-number">Factura Nro: {{ invoiceNumber }}</p>
+					<p class="doc-number">Factura Nro: {{ invoice.invoice_number }}</p>
 					<p class="doc-number">Numeracion consecutiva unica: {{ uniqueConsecutiveNumber }}</p>
 				</div>
 				<div class="text-end">
 					<p class="meta-row"><strong>Fecha de emision:</strong> {{ formattedDate }}</p>
 					<p class="meta-row"><strong>Hora de emision:</strong> {{ formattedTime }}</p>
-					<p class="meta-row"><strong>Numero de control:</strong> {{ controlNumber }}</p>
+					<p class="meta-row"><strong>Numero de control:</strong> {{ invoice.control_number }}</p>
 				</div>
 			</header>
 
 			<section class="info-grid">
 				<div class="info-block">
 					<h2>Datos del emisor</h2>
-					<p><strong>Razon social:</strong> {{ issuer.name }}</p>
-					<p><strong>Domicilio fiscal:</strong> {{ issuer.address }}</p>
+					<p><strong>Razon social:</strong> {{ issuer.legal_name }}</p>
+					<p><strong>Domicilio fiscal:</strong> {{ issuer.fiscal_address }}</p>
 					<p><strong>RIF:</strong> {{ issuer.rif }}</p>
 				</div>
 
 				<div class="info-block">
 					<h2>Datos del adquiriente</h2>
-					<p><strong>Nombre:</strong> {{ buyer.name }}</p>
-					<p><strong>Domicilio fiscal:</strong> {{ buyer.address }}</p>
-					<p><strong>Documento:</strong> {{ buyer.document }}</p>
-					<p><strong>RIF:</strong> {{ buyer.rif || 'No aplica (persona natural)' }}</p>
+					<p><strong>Nombre:</strong> {{ buyer.full_name }}</p>
+					<p><strong>Domicilio fiscal:</strong> {{ buyer.fiscal_address }}</p>
+					<p><strong>Documento:</strong> {{ buyer.document_id }}</p>
+					<p><strong>RIF/NIT:</strong> {{ buyer.tax_id || 'No aplica (persona natural)' }}</p>
 				</div>
 			</section>
 
 			<section class="control-info">
-				<p><strong>Control asignado por imprenta digital autorizada:</strong> {{ controlNumber }}</p>
-				<p><strong>Total de numeros de control asignados:</strong> desde el N° {{ controlRangeStart }} hasta el N° {{ controlRangeEnd }}</p>
+				<p><strong>Control asignado por imprenta digital autorizada:</strong> {{ invoice.control_number }}</p>
+				<p><strong>Total de numeros de control asignados:</strong> desde el N° {{ printer.control_range_start }} hasta el N° {{ printer.control_range_end }}</p>
 			</section>
 
 			<section>
@@ -77,87 +82,76 @@
 			</section>
 
 			<section class="totals-grid">
-				<p><span>Base imponible total:</span> <strong>{{ money(baseAmount) }}</strong></p>
-				<p><span>IVA ({{ (vatRate * 100).toFixed(0) }}%):</span> <strong>{{ money(vatAmount) }}</strong></p>
-				<p><span>Total operaciones:</span> <strong>{{ money(totalOperations) }}</strong></p>
+				<p><span>Base imponible total:</span> <strong>{{ money(invoice.taxable_base) }}</strong></p>
+				<p><span>IVA (16%):</span> <strong>{{ money(invoice.vat_amount) }}</strong></p>
+				<p><span>Total operaciones:</span> <strong>{{ money(invoice.total) }}</strong></p>
 			</section>
 
 			<footer class="receipt-footer">
-				<p><strong>Imprenta digital autorizada:</strong> {{ printer.companyName }}</p>
+				<p><strong>Imprenta digital autorizada:</strong> {{ printer.company_name }}</p>
 				<p><strong>RIF imprenta:</strong> {{ printer.rif }}</p>
-				<p><strong>Providencia administrativa:</strong> {{ printer.providenceCode }} de fecha {{ printer.providenceDate }}</p>
-				<p><strong>Fecha de asignacion de numero de control (8 digitos):</strong> {{ controlAssignmentDate8 }}</p>
+				<p><strong>Providencia administrativa:</strong> {{ printer.providence_code }} de fecha {{ formatDateText(printer.providence_date) }}</p>
+				<p><strong>Fecha de asignacion de numero de control (8 digitos):</strong> {{ formatDateText(printer.control_assignment_date) }}</p>
 			</footer>
-		</article>
+			</article>
+		</template>
 	</section>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { getCompanyProfile } from '@/api/companyProfile';
-import { getPrinterProfile } from '@/api/printerProfile';
+import { useRoute, useRouter } from 'vue-router';
+import { getMyLatestPurchase, getMyPurchaseById } from '@/api/purchase';
 
-const now = new Date();
+const route = useRoute();
+const router = useRouter();
 
-const invoiceNumber = 'F-2026-000145';
-const uniqueConsecutiveNumber = '000000145';
-const fallbackControlNumber = '00-DC0101-00002341';
-const fallbackControlRangeStart = '00-DC0101-00002001';
-const fallbackControlRangeEnd = '00-DC0101-00003000';
+const invoice = ref(null);
+const loading = ref(false);
+const error = ref(null);
 
-const fallbackIssuer = {
-	name: 'Interfaces Mobile Store C.A.',
-	address: 'Av. Principal Las Delicias, Torre Norte, Piso 2, Caracas, Distrito Capital',
-	rif: 'J-50321987-4'
-};
+const issuer = computed(() => invoice.value?.issuer_data || {});
+const buyer = computed(() => invoice.value?.buyer_data || {});
+const printer = computed(() => invoice.value?.printer_data || {});
 
-const buyer = {
-	name: 'Carlos Alberto Perez Rojas',
-	address: 'Urb. Lomas del Este, Valencia, Carabobo',
-	document: 'V-18456789',
-	rif: ''
-};
+const lines = computed(() => {
+	const raw = Array.isArray(invoice.value?.items) ? invoice.value.items : [];
+	return raw.map((line, idx) => ({
+		code: line.product_id || line.id || `OP-${idx + 1}`,
+		description: line.name || 'Producto',
+		qty: Number(line.qty || 0),
+		unitPrice: Number(line.final_price ?? line.price ?? 0)
+	}));
+});
 
-const fallbackPrinter = {
-	companyName: 'Impresos Digitales Andinos, C.A.',
-	rif: 'J-41234567-8',
-	providenceCode: 'GAT-DI-2026-0119',
-	providenceDate: '12022026',
-	controlRangeStart: fallbackControlRangeStart,
-	controlRangeEnd: fallbackControlRangeEnd,
-	controlAssignmentDate: '15032026'
-};
-
-const companyProfile = ref(null);
-const printerProfile = ref(null);
-
-const lines = [
-	{
-		code: 'OP-XM15U-001',
-		description: 'Telefono Xiaomi 15 Ultra 512GB - Color Negro',
-		qty: 1,
-		unitPrice: 9999.99
-	},
-	{
-		code: 'OP-ACC-041',
-		description: 'Case protector premium para Xiaomi 15 Ultra',
-		qty: 1,
-		unitPrice: 249.5
-	}
-];
-
-const adjustments = [
-	{ description: 'Descuento promocional lanzamiento (10%)', value: -1024.95 },
-	{ description: 'Ajuste por redondeo', value: 0.01 }
-];
-
-const vatRate = 0.16;
+const adjustments = computed(() => {
+	const discount = Number(invoice.value?.discount || 0);
+	if (discount <= 0) return [];
+	return [{ description: 'Descuento aplicado', value: -discount }];
+});
 
 const formatDate8 = (date) => {
 	const day = String(date.getDate()).padStart(2, '0');
 	const month = String(date.getMonth() + 1).padStart(2, '0');
 	const year = String(date.getFullYear());
 	return `${day}/${month}/${year}`;
+};
+
+const formatDateText = (value) => {
+	const raw = String(value || '').trim();
+	if (!raw) return '';
+
+	if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) return raw;
+
+	const digits = raw.replace(/\D/g, '');
+	if (digits.length === 8) {
+		return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+	}
+
+	const date = new Date(raw);
+	if (!Number.isNaN(date.getTime())) return formatDate8(date);
+
+	return raw;
 };
 
 const formatTimeMeridiem = (date) => {
@@ -169,56 +163,44 @@ const formatTimeMeridiem = (date) => {
 	return `${String(hours12).padStart(2, '0')}.${minutes}.${seconds} ${ampm}`;
 };
 
-const formattedDate = formatDate8(now);
-const formattedTime = formatTimeMeridiem(now);
+const issuedAt = computed(() => {
+	const dt = new Date(invoice.value?.createdAt || Date.now());
+	return Number.isNaN(dt.getTime()) ? new Date() : dt;
+});
 
-const issuer = computed(() => ({
-	name: companyProfile.value?.legal_name || fallbackIssuer.name,
-	address: companyProfile.value?.fiscal_address || fallbackIssuer.address,
-	rif: companyProfile.value?.rif || fallbackIssuer.rif
-}));
+const formattedDate = computed(() => formatDate8(issuedAt.value));
+const formattedTime = computed(() => formatTimeMeridiem(issuedAt.value));
 
-const printer = computed(() => ({
-	companyName: printerProfile.value?.company_name || fallbackPrinter.companyName,
-	rif: printerProfile.value?.rif || fallbackPrinter.rif,
-	providenceCode: printerProfile.value?.providence_code || fallbackPrinter.providenceCode,
-	providenceDate: printerProfile.value?.providence_date || fallbackPrinter.providenceDate,
-	controlRangeStart: printerProfile.value?.control_range_start || fallbackPrinter.controlRangeStart,
-	controlRangeEnd: printerProfile.value?.control_range_end || fallbackPrinter.controlRangeEnd,
-	controlAssignmentDate: printerProfile.value?.control_assignment_date || fallbackPrinter.controlAssignmentDate
-}));
+const uniqueConsecutiveNumber = computed(() => String(invoice.value?.id || '').padStart(9, '0'));
 
-const controlNumber = computed(() => printer.value.controlRangeStart || fallbackControlNumber);
-const controlRangeStart = computed(() => printer.value.controlRangeStart);
-const controlRangeEnd = computed(() => printer.value.controlRangeEnd);
-const controlAssignmentDate8 = computed(() => printer.value.controlAssignmentDate);
-
-const grossAmount = computed(() => lines.reduce((acc, line) => acc + (line.qty * line.unitPrice), 0));
-const adjustmentsTotal = computed(() => adjustments.reduce((acc, adj) => acc + adj.value, 0));
-const baseAmount = computed(() => Number((grossAmount.value + adjustmentsTotal.value).toFixed(2)));
-const vatAmount = computed(() => Number((baseAmount.value * vatRate).toFixed(2)));
-const totalOperations = computed(() => Number((baseAmount.value + vatAmount.value).toFixed(2)));
-
-const money = (value) => Number(value || 0).toLocaleString('es-VE', {
+const money = (value) => Number(value || 0).toLocaleString('es-BO', {
 	style: 'currency',
-	currency: 'VES'
+	currency: String(invoice.value?.currency || 'BOB')
 });
 
 const printReceipt = () => {
 	window.print();
 };
 
-onMounted(async () => {
-	try {
-		companyProfile.value = await getCompanyProfile();
-	} catch (_e) {
-		companyProfile.value = null;
+const goBack = () => {
+	if (window.history.length > 1) {
+		router.back();
+		return;
 	}
+	router.push('/usuario');
+};
+
+onMounted(async () => {
+	loading.value = true;
+	error.value = null;
 
 	try {
-		printerProfile.value = await getPrinterProfile();
-	} catch (_e) {
-		printerProfile.value = null;
+		const id = route.params.id;
+		invoice.value = id ? await getMyPurchaseById(id) : await getMyLatestPurchase();
+	} catch (e) {
+		error.value = e?.response?.data?.message || e?.message || 'No se pudo cargar la factura';
+	} finally {
+		loading.value = false;
 	}
 });
 </script>
@@ -233,16 +215,17 @@ onMounted(async () => {
 .receipt-actions {
 	display: flex;
 	justify-content: flex-end;
+	gap: 0.5rem;
 	margin-bottom: 1rem;
 }
 
 .receipt-card {
 	max-width: 980px;
 	margin: 0 auto;
-	border: 1px solid #cfcfcf;
+	border: 1px solid var(--text-color);
 	border-radius: 8px;
-	background: #fff;
-	color: #1b1b1b;
+	background: var(--main-bg-color);
+	color: var(--text-color);
 	padding: 1.5rem;
 }
 
@@ -250,7 +233,7 @@ onMounted(async () => {
 	display: flex;
 	justify-content: space-between;
 	gap: 1rem;
-	border-bottom: 1px solid #dedede;
+	border-bottom: 1px solid var(--text-color);
 	padding-bottom: 1rem;
 	margin-bottom: 1rem;
 }
@@ -263,7 +246,7 @@ onMounted(async () => {
 .doc-number,
 .meta-row {
 	margin: 0.2rem 0;
-	font-size: 0.95rem;
+	font-size: var(--p-size);
 }
 
 .info-grid {
@@ -274,26 +257,26 @@ onMounted(async () => {
 }
 
 .info-block {
-	border: 1px solid #ebebeb;
+	border: 1px solid var(--text-color);
 	border-radius: 6px;
 	padding: 0.75rem;
 }
 
 .info-block h2,
 section h2 {
-	font-size: 1rem;
+	font-size: calc(var(--h2-size) - 2px);
 	margin: 0 0 0.5rem;
 }
 
 .info-block p {
 	margin: 0.25rem 0;
-	font-size: 0.92rem;
+	font-size: var(--p-size);
 }
 
 .control-info {
 	margin-bottom: 1rem;
 	padding: 0.75rem;
-	border: 1px dashed #c9c9c9;
+	border: 1px dashed var(--text-color);
 	border-radius: 6px;
 }
 
@@ -311,14 +294,14 @@ section h2 {
 .adjustments-list li {
 	display: flex;
 	justify-content: space-between;
-	border-bottom: 1px solid #ececec;
+	border-bottom: 1px solid var(--text-color);
 	padding: 0.4rem 0;
 }
 
 .totals-grid {
 	margin-left: auto;
 	max-width: 380px;
-	border: 1px solid #e4e4e4;
+	border: 1px solid var(--text-color);
 	border-radius: 6px;
 	padding: 0.75rem;
 }
@@ -331,9 +314,9 @@ section h2 {
 
 .receipt-footer {
 	margin-top: 1rem;
-	border-top: 1px solid #dedede;
+	border-top: 1px solid var(--text-color);
 	padding-top: 0.8rem;
-	font-size: 0.9rem;
+	font-size: var(--p-size);
 }
 
 .receipt-footer p {

@@ -13,7 +13,7 @@
         <div class="col-12 col-md-6">
           <div class="mb-3">
             <label class="form-label">Nombre</label>
-            <input class="form-control" v-model="form.name" placeholder="Nombre de la Paleta" />
+            <input class="form-control" v-model.trim="form.name" placeholder="Nombre de la Paleta" required />
           </div>
 
           <div class="row">
@@ -62,6 +62,20 @@
 <script>
 import { getById, createPalette, updatePalette } from '../../../api/colorPalette';
 
+const getCssVarValue = (varName, fallback) => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+};
+
+const buildThemeDefaults = () => ({
+  main_bg_color: getCssVarValue('--main-bg-color', '#ffffff'),
+  secondary_color: getCssVarValue('--secondary-color', '#252525'),
+  accent_color: getCssVarValue('--accent-color', '#03cafc'),
+  text_color: getCssVarValue('--text-color', '#000000'),
+  alternate_text_color: getCssVarValue('--alternate-text-color', '#ffffff')
+});
+
 export default {
   name: 'ColorForm',
   props: {
@@ -80,6 +94,7 @@ export default {
   },
   emits: ['update:modelValue', 'save', 'saved', 'error'],
   data() {
+    const defaults = buildThemeDefaults();
     return {
       colorFields: {
         main_bg_color: 'Fondo principal',
@@ -91,11 +106,11 @@ export default {
       form: {
         id: this.modelValue.id || null,
         name: this.modelValue.name || '',
-        main_bg_color: this.modelValue.main_bg_color || '#ffffff',
-        secondary_color: this.modelValue.secondary_color || '#252525',
-        accent_color: this.modelValue.accent_color || '#03cafc',
-        text_color: this.modelValue.text_color || '#000000',
-        alternate_text_color: this.modelValue.alternate_text_color || '#ffffff'
+        main_bg_color: this.modelValue.main_bg_color || defaults.main_bg_color,
+        secondary_color: this.modelValue.secondary_color || defaults.secondary_color,
+        accent_color: this.modelValue.accent_color || defaults.accent_color,
+        text_color: this.modelValue.text_color || defaults.text_color,
+        alternate_text_color: this.modelValue.alternate_text_color || defaults.alternate_text_color
       },
       loading: false,
       saving: false,
@@ -138,14 +153,15 @@ export default {
   },
   methods: {
     createEmptyForm() {
+      const defaults = buildThemeDefaults();
       return {
         id: null,
         name: '',
-        main_bg_color: '#ffffff',
-        secondary_color: '#252525',
-        accent_color: '#03cafc',
-        text_color: '#000000',
-        alternate_text_color: '#ffffff'
+        main_bg_color: defaults.main_bg_color,
+        secondary_color: defaults.secondary_color,
+        accent_color: defaults.accent_color,
+        text_color: defaults.text_color,
+        alternate_text_color: defaults.alternate_text_color
       };
     },
     onColorChange(key, value) {
@@ -155,6 +171,13 @@ export default {
     async save() {
       this.saving = true;
       this.serverError = null;
+
+      if (!String(this.form.name || '').trim()) {
+        this.saving = false;
+        this.serverError = 'El nombre de la paleta es obligatorio';
+        return;
+      }
+
       const payload = { ...this.form };
       const id = payload.id;
       const isEditing = !!id;

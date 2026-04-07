@@ -37,7 +37,7 @@
             </td>
             <td style="width:150px;">
               <button class="btn btn-sm btn-outline-secondary me-2" @click="edit(item)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="remove(item)" :disabled="deletingId===item.id || items.length <= 1">Eliminar</button>
+              <button class="btn btn-sm btn-danger" @click="remove(item)" :disabled="deletingId===item.id || items.length <= 1 || item.id === activeId">Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -197,6 +197,12 @@ export default {
         showToast('Debe existir al menos un set tipografico', 'info');
         return;
       }
+
+      if (item.id === activeId.value) {
+        showToast('No puedes eliminar la tipografia activa. Selecciona otra primero.', 'info');
+        return;
+      }
+
       pendingDelete.value = item;
       showConfirm.value = true;
     }

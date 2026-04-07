@@ -183,15 +183,45 @@ img {
      background-color: transparent !important;
      border: 2px solid var(--secondary-color);
      padding: 12px 40px;
-     font-size: 16px;
+     font-size: var(--p-size);
 }
 
 .lead {
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      line-height: 30px;
      color: var(--secondary-color);
      margin: 0;
      padding: 0;
+}
+
+.h1,
+h1 {
+     font-size: var(--h1-size);
+}
+
+.h2,
+h2 {
+     font-size: var(--h2-size);
+}
+
+.h3,
+h3 {
+     font-size: calc(var(--h2-size) - 2px);
+}
+
+.h4,
+h4 {
+     font-size: calc(var(--h2-size) - 4px);
+}
+
+.h5,
+h5 {
+     font-size: calc(var(--h2-size) - 6px);
+}
+
+.h6,
+h6 {
+     font-size: calc(var(--h2-size) - 7px);
 }
 
 .form-control:focus {
@@ -284,7 +314,7 @@ button {
 .navigation.navbar-dark .navbar-nav .nav-link {
      padding: 0 20px;
      color: var(--text-color);
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 20px;
      font-weight: 500;
 }
@@ -353,7 +383,7 @@ button {
 
 .text-bg h1 {
      color: var(--text-color);
-     font-size: 60px;
+     font-size: calc(var(--h1-size) + 36px);
      line-height: 76px;
      padding-bottom: 45px;
      font-weight: bold;
@@ -385,7 +415,7 @@ button {
      background: transparent;
      border: var(--text-color) solid 2px;
      opacity: 1;
-     font-size: 30px;
+     font-size: calc(var(--h2-size) + 12px);
      color: var(--text-color);
      border-radius: 60px;
      top: 43%;
@@ -416,7 +446,7 @@ button {
 /** end banner section **/
 
 .titlepage h2 {
-     font-size: 35px;
+     font-size: calc(var(--h1-size) + 11px);
      color: var(--text-color);
      line-height: 45px;
      font-weight: bold;
@@ -430,7 +460,7 @@ button {
 }
 
 .read_more {
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      background-color: transparent;
      border: var(--alternate-text-color) solid 2px;
      color: var(--text-color);
@@ -488,7 +518,7 @@ button {
 
 .about .titlepage p {
      color: var(--text-color);
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 35px;
      font-weight: 400;
      padding-top: 20px;
@@ -518,7 +548,7 @@ button {
 }
 
 .glasses .titlepage p {
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 30px;
      font-weight: 400;
      padding-top: 10px;
@@ -543,14 +573,14 @@ button {
 
 .glasses .glasses_box h3 {
      color: var(--text-color);
-     font-size: 22px;
+     font-size: calc(var(--h2-size) + 4px);
      line-height: 20px;
      padding: 70px 0px 9px 0px;
 }
 
 .glasses .glasses_box p {
      color: var(--text-color);
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      line-height: 28px;
      font-weight: 400;
 }
@@ -615,7 +645,7 @@ button {
 
 .shop .titlepage p {
      color: var(--alternate-text-color);
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 30px;
      padding: 40px 0px 80px 0;
      width: 100%;
@@ -643,14 +673,14 @@ button {
 
 .clients .titlepage p {
      color: var(--text-color);
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 29px;
      padding-top: 10px;
 }
 
 .clients_box h3 {
      color: var(--text-color);
-     font-size: 26px;
+     font-size: calc(var(--h2-size) + 8px);
      line-height: 30px;
      padding-top: 23px;
      font-weight: 600;
@@ -658,7 +688,7 @@ button {
 
 .clients_box p {
      color: var(--text-color);
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 30px;
 }
 
@@ -714,7 +744,7 @@ button {
 
 .contact .main_form h3 {
      color: var(--secondary-color);
-     font-size: 27px;
+     font-size: calc(var(--h2-size) + 9px);
      line-height: 30px;
      text-align: center;
      display: block;
@@ -742,7 +772,7 @@ button {
      height: 57px;
      background: transparent;
      color: var(--secondary-color);
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      font-weight: normal;
      border-top: inherit;
      border-left: inherit;
@@ -758,7 +788,7 @@ button {
      background: transparent;
      color: var(--secondary-color);
      ;
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      font-weight: normal;
      border-top: inherit;
      border-left: inherit;
@@ -768,7 +798,7 @@ button {
 .send_btn {
      background: var(--accent-color);
      font-weight: 600;
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      width: 100%;
      color: var(--alternate-text-color);
      height: 50px;
@@ -807,7 +837,7 @@ ul.location_icon {
 
 ul.location_icon li {
      display: inline-block;
-     font-size: 17px;
+     font-size: calc(var(--p-size) + 2px);
      line-height: 20px;
      color: var(--alternate-text-color);
      text-align: center;
@@ -815,7 +845,7 @@ ul.location_icon li {
 }
 
 ul.location_icon li a {
-     font-size: 40px;
+     font-size: calc(var(--h1-size) + 16px);
      color: var(--alternate-text-color);
      line-height: 30px;
      display: block;
@@ -829,7 +859,7 @@ ul.location_icon li a {
 
 .copyright p {
      color: var(--text-color);
-     font-size: 18px;
+     font-size: calc(var(--p-size) + 3px);
      line-height: 22px;
      text-align: center;
      padding-top: 25px;
@@ -859,3 +889,53 @@ ul.location_icon li a {
 .shop {
      margin-bottom: 90px;
 }
+
+.btn-primary {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--accent-color);
+  filter: brightness(0.9);
+  border: none;
+  color: var(--alternate-text-color);
+}
+
+.btn-outline-secondary {
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+  background: var(--main-bg-color);
+}
+
+.btn-outline-secondary:hover {
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--alternate-text-color);
+}
+
+.btn-outline-primary, .btn-secondary {
+  border: 1px solid var(--accent-color);
+  background-color: var(--main-bg-color);
+  color: var(--accent-color);
+}
+
+.btn-outline-primary:hover, .btn-secondary:hover {
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
+  border: 1px solid var(--accent-color);
+}
+
+.btn-outline-danger, .btn-outline-danger:disabled, .btn-danger {
+  border: 1px solid var(--alternate-text-color);
+  background-color: var(--secondary-color);
+  color: var(--alternate-text-color);
+}
+
+.btn-outline-danger:hover, .btn-danger:hover {
+  background: var(--main-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--text-color);
+}
+

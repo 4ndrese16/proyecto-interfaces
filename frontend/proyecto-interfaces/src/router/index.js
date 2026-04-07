@@ -7,6 +7,8 @@ import ReceiptDemoView from '@/views/ReceiptDemoView.vue'
 import CatalogView from '@/views/CatalogView.vue'
 import ProductDetailView from '@/views/ProductDetailView.vue'
 import CartView from '@/views/CartView.vue'
+import CheckoutView from '@/views/CheckoutView.vue'
+import UserView from '@/views/UserView.vue'
 import { getToken } from '@/api/auth';
 
 function parseJwt(token) {
@@ -31,9 +33,12 @@ const router = createRouter({
     { path: '/admin', component: AdminView, meta: { requiresAuth: true, requiresAdmin: true } },
     { path: '/register', component: RegisterView },
     { path: '/receipt-demo', component: ReceiptDemoView },
+    { path: '/receipt-demo/:id', component: ReceiptDemoView, meta: { requiresAuth: true } },
     { path: '/catalogo', component: CatalogView },
     { path: '/producto/:id', component: ProductDetailView },
-    { path: '/carrito', component: CartView, meta: { requiresAuth: true } }
+    { path: '/carrito', component: CartView, meta: { requiresAuth: true } },
+    { path: '/pago', component: CheckoutView, meta: { requiresAuth: true } },
+    { path: '/usuario', component: UserView, meta: { requiresAuth: true } }
   ],
 })
 

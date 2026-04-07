@@ -125,6 +125,15 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
+    const typography = await Typography.findByPk(id);
+    if (!typography) {
+      return res.status(404).json({ message: 'Tipografia no encontrada' });
+    }
+
+    if (typography.is_active) {
+      return res.status(400).json({ message: 'No se puede eliminar la tipografia activa. Activa otra primero.' });
+    }
+
     await Typography.destroy({ where: { id } });
     res.json({ message: 'Deleted' });
   } catch (error) {
