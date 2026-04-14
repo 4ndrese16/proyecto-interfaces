@@ -9,23 +9,7 @@
         <div class="col-12 col-lg-6">
           <div class="image-box">
             <img :src="displayImage" :alt="product.name" class="main-image" />
-          </div>
-
-          <div v-if="variants.length" class="mt-3">
-            <small class="d-block mb-2">Colores disponibles</small>
-            <div class="d-flex gap-2 flex-wrap">
-              <button
-                v-for="(variant, idx) in variants"
-                :key="`${variant.color_name}-${idx}`"
-                class="swatch"
-                :class="{ active: idx === selectedVariantIndex }"
-                :title="variant.color_name"
-                :style="{ background: variant.color_hex || fallbackSwatchColor }"
-                @click="selectedVariantIndex = idx"
-              />
-            </div>
-            <small class="text-muted d-block mt-2">{{ activeVariant?.color_name || '' }}</small>
-          </div>
+          </div>        
         </div>
 
         <div class="col-12 col-lg-6">
@@ -34,7 +18,8 @@
 
           <div class="mb-3">
             <span v-if="product.is_new" class="badge badge-new rounded-pill me-1">Nuevo</span>
-            <span v-if="product.has_discount" class="badge badge-discount rounded-pill">-{{ product.discount_percentage }}%</span>
+            <span v-if="product.has_discount" class="badge badge-discount rounded-pill">-{{ product.discount_percentage
+              }}%</span>
           </div>
 
           <div class="price-wrap mb-3">
@@ -47,6 +32,36 @@
           <div class="d-flex gap-2 mt-4">
             <button class="btn btn-primary" @click="addToCart">Añadir al carrito</button>
             <router-link class="btn btn-outline-secondary" to="/catalogo">Volver al catalogo</router-link>
+
+          </div>
+          <div class="share-wrap mt-2" v-if="product.id">
+            <button class="btn btn-outline-secondary btn-sm" type="button" @click="toggleShareMenu">
+              <i class="fas fa-share-alt me-1"></i> Compartir
+            </button>
+            <div v-if="showShareMenu" class="share-menu">
+              <button class="share-item" type="button" @click="shareTelegram">
+                <i class="fab fa-telegram-plane me-1"></i> Telegram
+              </button>
+              <button class="share-item" type="button" @click="shareWhatsapp">
+                <i class="fab fa-whatsapp me-1"></i> WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <div v-if="variants.length" class="mt-3">
+            <small class="d-block mb-2">Colores disponibles</small>
+            <div class="swatches d-flex gap-2 flex-wrap">
+              <button
+                v-for="(variant, idx) in variants"
+                :key="`${variant.color_name}-${idx}`"
+                class="swatch"
+                :class="{ active: idx === selectedVariantIndex }"
+                :title="variant.color_name"
+                :style="{ background: variant.color_hex || fallbackSwatchColor }"
+                @click="selectedVariantIndex = idx"
+              />
+            </div>
+            <small class="text-muted d-block mt-2">{{ activeVariant?.color_name || '' }}</small>
           </div>
         </div>
       </div>
@@ -67,6 +82,7 @@ const error = ref(null);
 const product = ref(null);
 const selectedVariantIndex = ref(0);
 const cartStore = useCartStore();
+const showShareMenu = ref(false);
 const fallbackSwatchColor = 'var(--secondary-color)';
 
 const fallbackImage = new URL('@/assets/images/interfaces/xiaomi_15_ultra_product.png', import.meta.url).href;
@@ -128,12 +144,44 @@ const load = async () => {
 
 watch(() => route.params.id, load);
 onMounted(load);
+
+const productPublicUrl = computed(() => {
+  if (!product.value?.id) return '';
+  if (typeof window === 'undefined') return `/producto/${product.value.id}`;
+  return `${window.location.origin}/producto/${product.value.id}`;
+});
+
+const shareText = computed(() => {
+  const name = product.value?.name || 'Producto';
+  return `Mira este producto: ${name}`;
+});
+
+const toggleShareMenu = () => {
+  showShareMenu.value = !showShareMenu.value;
+};
+
+const openShareUrl = (url) => {
+  if (!url) return;
+  window.open(url, '_blank', 'noopener,noreferrer');
+  showShareMenu.value = false;
+};
+
+const shareTelegram = () => {
+  const text = encodeURIComponent(`${shareText.value} ${productPublicUrl.value}`);
+  openShareUrl(`https://t.me/share/url?url=${encodeURIComponent(productPublicUrl.value)}&text=${text}`);
+};
+
+const shareWhatsapp = () => {
+  const text = encodeURIComponent(`${shareText.value} ${productPublicUrl.value}`);
+  openShareUrl(`https://wa.me/?text=${text}`);
+};
 </script>
 
 <style scoped>
 .product-detail {
   background: var(--main-bg-color);
   color: var(--text-color);
+  padding: 0 10rem;
 }
 
 .image-box {
@@ -147,6 +195,12 @@ onMounted(load);
   width: 100%;
   max-height: 480px;
   object-fit: contain;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .swatch {
@@ -187,13 +241,13 @@ onMounted(load);
 }
 
 .badge-new {
-    background: var(--accent-color);
-    color: var(--alternate-text-color);
+  background: var(--accent-color);
+  color: var(--alternate-text-color);
 }
 
 .badge-discount {
-    background: var(--secondary-color);
-    color: var(--alternate-text-color);
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
 }
 
 .btn-primary {
@@ -221,27 +275,64 @@ onMounted(load);
   border: 1px solid var(--alternate-text-color);
 }
 
-.btn-outline-primary, .btn-secondary {
+.btn-outline-primary,
+.btn-secondary {
   border: 1px solid var(--accent-color);
   background-color: var(--main-bg-color);
   color: var(--accent-color);
 }
 
-.btn-outline-primary:hover, .btn-secondary:hover {
+.btn-outline-primary:hover,
+.btn-secondary:hover {
   background: var(--accent-color);
   color: var(--alternate-text-color);
   border: 1px solid var(--accent-color);
 }
 
-.btn-outline-danger, .btn-outline-danger:disabled, .btn-danger {
+.btn-outline-danger,
+.btn-outline-danger:disabled,
+.btn-danger {
   border: 1px solid var(--alternate-text-color);
   background-color: var(--secondary-color);
   color: var(--alternate-text-color);
 }
 
-.btn-outline-danger:hover, .btn-danger:hover {
+.btn-outline-danger:hover,
+.btn-danger:hover {
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+}
+
+.share-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.share-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  min-width: 165px;
+  border: 1px solid var(--text-color);
+  border-radius: 8px;
+  background: var(--main-bg-color);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  z-index: 6;
+}
+
+.share-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.share-item:hover {
+  background: var(--secondary-color);
+  color: var(--alternate-text-color);
 }
 </style>

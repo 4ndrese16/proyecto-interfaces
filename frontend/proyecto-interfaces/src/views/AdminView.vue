@@ -207,4 +207,9 @@ async function onProductSaved() {
     color: var(--text-color);
     border: 1px solid var(--text-color)
 }
+
+@media screen and (max-width: 700px) {
+  .admin-section {
+    padding: 0;
+}}
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <AppHeader />
+  <AppHeader />
   <div class="login-container container py-4">
     <div class="row justify-content-center">
       <div class="col-12 col-md-6">
@@ -48,9 +48,9 @@ async function onSubmit() {
   error.value = null;
   try {
     await login({ username: form.username, password: form.password });
-  // redirect to requested path or to catalog
-  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
-  router.push(redirectTo);
+    // redirect to requested path or to catalog
+    const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
+    router.push(redirectTo);
   } catch (err) {
     error.value = (err && err.response && err.response.data && err.response.data.message) || (err && err.message) || 'Error al iniciar sesión';
   } finally {
@@ -60,5 +60,26 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-.login-container { max-width: 720px; margin: 0 auto; }
+
+.login-container {
+  max-width: 720px;
+  margin: 0 auto;
+  background-color: var(--main-bg-color);
+  color: var(--alternate-text-color);
+  height: 90vh;
+}
+
+.card {
+  background-color: var(--secondary-color);
+  color: var(--alternate-text-color);
+  margin-top: 10rem;
+}
+
+h3 {
+  color: var(--alternate-text-color);
+}
+
+.btn-link {
+  color: var(--accent-color);
+}
 </style>

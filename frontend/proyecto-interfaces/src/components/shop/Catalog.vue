@@ -57,7 +57,7 @@
 				</div>
 
 				<div class="row g-3">
-					<div v-for="item in paginatedProducts" :key="item.id" class="col-12 col-sm-6 col-lg-4 col-xl-3 d-flex justify-content-center">
+					<div v-for="item in paginatedProducts" :key="item.id" class="product col-12 col-sm-6 col-lg-4 col-xl-3 d-flex justify-content-center">
 						<ProductCard :product="item" />
 					</div>
 				</div>
@@ -175,6 +175,7 @@ onMounted(load);
 </script>
 
 <style scoped>
+
 .catalog-section {
 	background: var(--main-bg-color);
 	color: var(--text-color);
@@ -182,8 +183,10 @@ onMounted(load);
 }
 
 .filters {
-	background: var(--main-bg-color);
+	background: var(--secondary-color);
 	border: 1px solid var(--text-color);
+	border-radius: 20px;
+	color: var(--alternate-text-color);
 }
 
 .form-control,
@@ -191,6 +194,7 @@ onMounted(load);
 	background: var(--main-bg-color);
 	color: var(--text-color);
 	border: 1px solid var(--text-color);
+	border-radius: 20px;
 }
 
 .form-select{
@@ -257,5 +261,15 @@ onMounted(load);
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+}
+
+@media screen and (max-width: 700px) {
+  .catalog-section {
+    padding: 0;
+}
+
+.product {
+	margin-top: 2rem;
+}
 }
 </style>

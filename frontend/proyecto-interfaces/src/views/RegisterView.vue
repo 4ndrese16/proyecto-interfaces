@@ -1,5 +1,5 @@
 <template>
-    <AppHeader />
+  <AppHeader />
   <div class="register-container container py-4">
     <div class="row justify-content-center">
       <div class="col-12 col-md-6">
@@ -58,9 +58,9 @@ async function onSubmit() {
   error.value = null;
   try {
     await register({ username: form.username, password: form.password });
-  success.value = 'Cuenta creada. Redirigiendo...';
-  const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
-  setTimeout(() => router.push(redirectTo), 800);
+    success.value = 'Cuenta creada. Redirigiendo...';
+    const redirectTo = route.query && route.query.redirect ? String(route.query.redirect) : '/catalogo';
+    setTimeout(() => router.push(redirectTo), 800);
   } catch (err) {
     error.value = (err && err.response && err.response.data && err.response.data.message) || (err && err.message) || 'Error al crear cuenta';
   } finally {
@@ -70,5 +70,25 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-.register-container { max-width: 720px; margin: 0 auto; }
+.register-container {
+  max-width: 720px;
+  margin: 0 auto;
+  background-color: var(--main-bg-color);
+  color: var(--alternate-text-color);
+  height: 90vh;
+}
+
+.card {
+  background-color: var(--secondary-color);
+  color: var(--alternate-text-color);
+  margin-top: 10rem;
+}
+
+h3 {
+  color: var(--alternate-text-color);
+}
+
+.btn-link {
+  color: var(--accent-color);
+}
 </style>

@@ -302,6 +302,7 @@ export default {
 	background: var(--main-bg-color);
 	color: var(--text-color);
 	border: 1px solid var(--text-color);
+	border-radius: 20px;
 }
 
 .form-control,

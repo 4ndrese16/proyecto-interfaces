@@ -191,6 +191,7 @@ const goCheckout = () => {
 .cart-section {
   background: var(--main-bg-color);
   color: var(--text-color);
+  padding: 0 5rem;
 }
 
 .card {
@@ -261,5 +262,11 @@ const goCheckout = () => {
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+}
+
+@media screen and (max-width: 700px) {
+  .cart-section {
+    padding: 0;
+}
 }
 </style>

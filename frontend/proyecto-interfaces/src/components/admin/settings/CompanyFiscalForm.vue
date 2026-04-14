@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-form card p-3">
+  <div class="settings-form card">
     <h4 class="mb-3">Datos Fiscales de la Empresa</h4>
 
     <div v-if="serverError" class="alert alert-danger">{{ serverError }}</div>
@@ -21,7 +21,7 @@
         <input v-model.trim="form.rif" class="form-control" type="text" placeholder="J-12345678-9" required />
       </div>
 
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 justify-content-center">
         <button class="btn btn-primary" type="submit" :disabled="saving">
           <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
           Guardar datos fiscales
@@ -82,6 +82,8 @@ onMounted(load);
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+  padding: 1rem 2rem;
+  border-radius: 20px;
 }
 
 .form-control {

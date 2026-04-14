@@ -31,6 +31,7 @@
 						<td>
 							<strong>{{ item.name }}</strong>
 							<div class="small text-muted">ID: {{ item.id }}</div>
+							<div class="small text-muted">Código: {{ item.product_code }}</div>
 						</td>
 						<td>{{ categoryLabel(item.category) }}</td>
 						<td>{{ item.brand }}</td>

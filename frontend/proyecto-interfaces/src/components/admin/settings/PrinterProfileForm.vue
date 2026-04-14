@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-form card p-3">
+  <div class="settings-form card printer-profile-form">
     <h4 class="mb-3">Datos de la Imprenta Autorizada</h4>
 
     <div v-if="serverError" class="alert alert-danger">{{ serverError }}</div>
@@ -45,7 +45,7 @@
 
       <small class="text-muted d-block mt-2">Formato de fecha requerido: dd/mm/aaaa</small>
 
-      <div class="d-flex gap-2 mt-3">
+      <div class="d-flex gap-2 mt-3 justify-content-center">
         <button class="btn btn-primary" type="submit" :disabled="saving">
           <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
           Guardar imprenta
@@ -127,6 +127,8 @@ onMounted(load);
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+  padding: 1rem 2rem;
+  border-radius: 20px;
 }
 
 .form-control {

@@ -57,7 +57,7 @@
                   <label class="form-label">Domicilio fiscal</label>
                   <input v-model.trim="form.fiscal_address" class="form-control" required />
                 </div>
-                <div class="col-12">
+                <div class="col-12 justify-content-center d-flex">
                   <button class="btn btn-primary" type="submit" :disabled="savingProfile">
                     {{ savingProfile ? 'Guardando...' : 'Guardar datos' }}
                   </button>
@@ -201,6 +201,7 @@ onMounted(async () => {
   background: var(--main-bg-color);
   color: var(--text-color);
   border: 1px solid var(--text-color);
+  border-radius: 20px;
 }
 
 .active {
@@ -227,4 +228,9 @@ onMounted(async () => {
   border: none;
   margin-top: 1rem;
 }
+
+@media screen and (max-width: 700px) {
+  .user-section {
+    padding: 0 1rem;
+}}
 </style>

@@ -323,6 +323,7 @@ async function confirmPayment() {
 .checkout-section {
   background: var(--main-bg-color);
   color: var(--text-color);
+  padding: 0 5rem;
 }
 
 .card {
@@ -348,4 +349,9 @@ async function confirmPayment() {
   color: var(--alternate-text-color);
   border: none;
 }
+
+@media screen and (max-width: 700px) {
+  .checkout-section {
+    padding: 0;
+}}
 </style>
