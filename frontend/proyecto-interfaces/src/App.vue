@@ -1,34 +1,27 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
-import Loader from '@/components/layout/Loader.vue';
+import { useUiStore } from '@/stores/uiStore';
+import TangramLoader from '@/components/layout/TangramLoader.vue';
 
 const route = useRoute();
-const isLoading = ref(true);
-let timerId = null;
+const uiStore = useUiStore();
+const isLoading = ref(uiStore.loaderEnabled);
 
-function triggerLoader(duration = 450) {
-  isLoading.value = true;
-  if (timerId) clearTimeout(timerId);
-  timerId = setTimeout(() => {
-    isLoading.value = false;
-  }, duration);
+function onLoaderLoaded() {
+  isLoading.value = false;
 }
 
 onMounted(() => {
-  triggerLoader(800);
+  isLoading.value = uiStore.loaderEnabled;
 });
 
 watch(() => route.fullPath, () => {
-  triggerLoader(450);
-});
-
-onBeforeUnmount(() => {
-  if (timerId) clearTimeout(timerId);
+  isLoading.value = uiStore.loaderEnabled;
 });
 </script>
 
 <template>
-  <Loader v-if="isLoading" />
-  <RouterView />
+  <TangramLoader v-if="uiStore.loaderEnabled && isLoading" @loaded="onLoaderLoaded" />
+  <RouterView v-if="!isLoading || !uiStore.loaderEnabled" />
 </template>

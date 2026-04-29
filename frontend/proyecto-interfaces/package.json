@@ -13,8 +13,10 @@
     "bootstrap": "^5.3.8",
     "datatables.net-dt": "^2.3.7",
     "datatables.net-vue3": "^3.0.4",
+    "gsap": "^3.12.5",
     "pinia": "^3.0.4",
     "swiper": "^12.1.2",
+    "three": "^0.162.0",
     "vue": "^3.5.29",
     "vue-router": "^5.0.3"
   },

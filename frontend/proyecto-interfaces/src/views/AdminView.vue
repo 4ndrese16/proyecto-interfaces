@@ -6,8 +6,20 @@
             <div class="col-12 col-lg-3 mb-3">
                 <div class="card h-100" style="background: var(--main-bg-color); color: var(--alternate-text-color);">
                     <div class="card-body">
-                        <h2 class="card-title">Admin Dashboard</h2>
-                        <p class="small text-muted">Selecciona un módulo</p>
+                        <div class="d-flex justify-content-between align-items-start mb-3 admin-header-row">
+                            <div>
+                                <h2 class="card-title">Admin Dashboard</h2>
+                                <p class="small text-muted">Selecciona un módulo</p>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-sm"
+                                :class="uiStore.loaderEnabled ? 'btn-outline-danger' : 'btn-outline-success'"
+                                @click="toggleLoaderEnabled"
+                            >
+                                {{ uiStore.loaderEnabled ? 'Desactivar loader' : 'Activar loader' }}
+                            </button>
+                        </div>
                         <ul class="nav nav-pills flex-column mt-3" role="tablist">
                             <li class="nav-item mb-2" role="presentation">
                                 <button :class="['nav-link', activeTab === 'config' ? 'active' : '']" @click="activeTab = 'config'" type="button">Configuraciones</button>
@@ -107,6 +119,7 @@
 import { ref, nextTick } from 'vue';
 import { useColorStore } from '@/stores/colorStore'
 import { useFontStore } from '@/stores/fontStore';
+import { useUiStore } from '@/stores/uiStore';
 import ColorForm from '@/components/admin/settings/ColorForm.vue';
 import PaletteTable from '@/components/admin/settings/PaletteTable.vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
@@ -128,6 +141,11 @@ const paletteTableKey = ref(0);
 const fontTable = ref(null);
 const productTable = ref(null);
 const editingProductId = ref(null);
+const uiStore = useUiStore();
+
+function toggleLoaderEnabled() {
+    uiStore.toggleLoader();
+}
 
 function onEditPalette(palette) {
     editingPaletteId.value = palette && palette.id ? palette.id : null;
@@ -205,11 +223,42 @@ async function onProductSaved() {
 .nav-link {
     background: var(--main-bg-color);
     color: var(--text-color);
-    border: 1px solid var(--text-color)
+    border: 1px solid var(--text-color);
+    width: 10rem;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 1rem;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    text-align: center;
+}
+
+.nav-item:last-child .nav-link {
+    margin-bottom: 0;
+}
+
+.admin-header-row {
+    gap: 1rem;
+}
+
+.admin-header-row .btn {
+    min-width: 165px;
+}
+
+.btn-outline-success {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: none;
+}
+
+.btn-outline-success:hover {
+    background-color: var(--accent-color);
+    color: var(--alternate-text-color);
 }
 
 @media screen and (max-width: 700px) {
   .admin-section {
     padding: 0;
-}}
+  }
+}
 </style>
