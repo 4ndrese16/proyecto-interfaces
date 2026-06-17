@@ -383,7 +383,7 @@ button {
 
 .text-bg h1 {
      color: var(--text-color);
-     font-size: calc(var(--h1-size) + 36px);
+     font-size: calc(var(--h1-size));
      line-height: 76px;
      padding-bottom: 45px;
      font-weight: bold;
@@ -793,6 +793,14 @@ button {
      border-top: inherit;
      border-left: inherit;
      border-right: inherit;
+}
+
+.btn, .nav-link {
+     font-size: var(--p-size) !important;
+}
+
+input {
+     font-size: var(--p-size) !important ;
 }
 
 .send_btn {

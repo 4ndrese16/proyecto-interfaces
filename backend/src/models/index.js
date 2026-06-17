@@ -7,6 +7,8 @@ const CompanyProfile = require('./CompanyProfile');
 const PrinterProfile = require('./PrinterProfile');
 const Coupon = require('./Coupon');
 const PurchaseInvoice = require('./PurchaseInvoice');
+const Video = require('./Video');
+const CarouselImage = require('./CarouselImage');
 
 User.hasMany(PurchaseInvoice, { foreignKey: 'user_id', as: 'invoices' });
 PurchaseInvoice.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
@@ -25,5 +27,7 @@ module.exports = {
   PrinterProfile,
   Coupon,
   PurchaseInvoice,
+  Video,
+  CarouselImage,
   initDB
 };

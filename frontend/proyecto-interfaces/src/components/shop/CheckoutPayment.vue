@@ -350,6 +350,10 @@ async function confirmPayment() {
   border: none;
 }
 
+.btn {
+  font-size: var(--p-size);
+}
+
 @media screen and (max-width: 700px) {
   .checkout-section {
     padding: 0;

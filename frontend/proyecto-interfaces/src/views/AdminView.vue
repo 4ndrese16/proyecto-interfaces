@@ -38,9 +38,11 @@
                                         <button :class="['nav-link p-1', subTab === 'fiscal' ? 'active' : '']" @click="subTab = 'fiscal'" type="button">Facturación</button>
                                     </li>
                                     <li class="nav-item mb-1">
-                                        <button :class="['nav-link p-1', subTab === 'coupons' ? 'active' : '']" @click="subTab = 'coupons'" type="button">Cupones</button>
+                                        <button :class="['nav-link p-1', subTab === 'videos' ? 'active' : '']" @click="subTab = 'videos'" type="button">Videos</button>
                                     </li>
-                                    <!-- future submenu items -->
+                                    <li class="nav-item mb-1">
+                                        <button :class="['nav-link p-1', subTab === 'carousel' ? 'active' : '']" @click="subTab = 'carousel'" type="button">Carrusel de imágenes</button>
+                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -106,6 +108,22 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div v-show="subTab === 'videos'">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <VideoForm />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-show="subTab === 'carousel'">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <ImageCarouselForm />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,6 +149,8 @@ import ProductTable from '@/components/shop/ProductTable.vue';
 import CompanyFiscalForm from '@/components/admin/settings/CompanyFiscalForm.vue';
 import PrinterProfileForm from '@/components/admin/settings/PrinterProfileForm.vue';
 import CouponManager from '@/components/admin/settings/CouponManager.vue';
+import VideoForm from '@/components/admin/settings/VideoForm.vue';
+import ImageCarouselForm from '@/components/admin/settings/ImageCarouselForm.vue';
 
 // default tab on load: configuraciones and default submenu
 const activeTab = ref('config');

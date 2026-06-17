@@ -264,6 +264,10 @@ const goCheckout = () => {
   border: 1px solid var(--text-color);
 }
 
+.btn {
+  font-size: var(--p-size);
+}
+
 @media screen and (max-width: 700px) {
   .cart-section {
     padding: 0;

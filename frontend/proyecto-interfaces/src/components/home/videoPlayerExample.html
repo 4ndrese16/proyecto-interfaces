@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Reproductor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a1e2c 0%, #0f121c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .video-container {
+            background-color: #000;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 1024px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        video {
+            display: block;
+            width: 100%;
+            background: #000;
+            cursor: pointer;
+        }
+
+        /* ----- BARRA DE CONTROLES PERSONALIZADA ----- */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: rgba(20, 24, 35, 0.92);
+            backdrop-filter: blur(12px);
+            padding: 0.6rem 1.2rem;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .controls button {
+            background: rgba(30, 35, 48, 0.9);
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            min-width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #f0f3fa;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            padding: 0 0.7rem;
+            gap: 4px;
+        }
+
+        .controls button:hover {
+            background: #3a415b;
+            transform: scale(1.02);
+            color: white;
+        }
+
+        .controls button:active {
+            transform: scale(0.96);
+        }
+
+        .progress-area {
+            flex: 3;
+            min-width: 140px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .time-display {
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            background: #0b0e16;
+            padding: 0.2rem 0.6rem;
+            border-radius: 32px;
+            color: #b9c3e9;
+            letter-spacing: 0.5px;
+        }
+
+        .progress-wrapper {
+            flex: 1;
+            background: #2a2f3f;
+            border-radius: 20px;
+            height: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: height 0.1s;
+        }
+
+        .progress-wrapper:hover {
+            height: 9px;
+            background: #3f465e;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #e74c8b, #f1c40f);
+            border-radius: 20px;
+            position: relative;
+            pointer-events: none;
+            transition: width 0.05s linear;
+        }
+
+        /* Menús desplegables para audio y subtítulos */
+        .dropdown-menu {
+            position: absolute;
+            bottom: 130%;
+            left: 0;
+            background: #1e2436e6;
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0.6rem 0;
+            min-width: 160px;
+            z-index: 200;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            pointer-events: none;
+        }
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .dropdown-menu button, .dropdown-menu .track-option {
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+            font-size: 0.9rem;
+            font-family: inherit;
+            color: #eef2ff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: none;
+            justify-content: flex-start;
+        }
+        .dropdown-menu button:hover, .dropdown-menu .track-option:hover {
+            background: #3a4a7a;
+            transform: none;
+        }
+        .dropdown-menu .active-track {
+            background: #5f7fbf;
+            font-weight: bold;
+            color: white;
+        }
+        .dropdown-menu hr {
+            margin: 0.3rem 0;
+            border-color: #4a5568;
+        }
+
+        /* Ajustes responsivos */
+        @media (max-width: 780px) {
+            .controls {
+                padding: 0.5rem 0.7rem;
+                gap: 0.3rem;
+            }
+            .controls button {
+                min-width: 1.9rem;
+                height: 1.9rem;
+                font-size: 0.9rem;
+                padding: 0 0.5rem;
+            }
+            .time-display {
+                font-size: 0.7rem;
+            }
+            .dropdown-menu {
+                min-width: 140px;
+                bottom: 120%;
+            }
+        }
+
+        /* Ocultar controles nativos */
+        video::-webkit-media-controls {
+            display: none !important;
+        }
+        video::-webkit-media-controls-enclosure {
+            display: none !important;
+        }
+        video {
+            pointer-events: auto;
+        }
+
+        /* Indicador de subtítulo activo */
+        .subtitle-badge {
+            font-size: 0.7rem;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="video-container">
+    <!-- Video SIN controles nativos -->
+    <video id="main-video" src="./video/35053-405203426_medium.mp4" type="video/mp4" preload="metadata" crossorigin="anonymous">
+        Tu navegador no soporta la etiqueta de video.
+    </video>
+
+    <!-- Barra de controles personalizada -->
+    <div id="video-controls" class="controls">
+        <div class="controls-group">
+            <button id="play-pause" type="button" title="Reproducir / Pausar">▶</button>
+            <button id="stop" type="button" title="Detener">⏹️</button>
+        </div>
+
+        <div class="progress-area">
+            <div class="progress-wrapper" id="progress-wrapper">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="time-display">
+                <span id="current-time">0:00</span> / <span id="duration-time">0:00</span>
+            </div>
+        </div>
+
+        <div class="controls-group">
+            <button id="mute" type="button" title="Silenciar / Activar sonido">🔊</button>
+            <button id="vol-dec" type="button" title="Bajar volumen">−</button>
+            <button id="vol-inc" type="button" title="Subir volumen">+</button>
+            <button id="audio-track-btn" type="button" title="Pista de audio">🎵 Audio</button>
+            <button id="subtitle-btn" type="button" title="Subtítulos">📄 Subs</button>
+            <button id="fs" type="button" title="Pantalla completa">⛶</button>
+        </div>
+
+        <!-- Menú desplegable para pistas de audio -->
+        <div id="audio-menu" class="dropdown-menu">
+            <div class="track-option" data-audio-index="-1">🔊 Pista por defecto</div>
+            <!-- Aquí se llenarán dinámicamente las pistas de audio -->
+        </div>
+
+        <!-- Menú desplegable para subtítulos -->
+        <div id="subtitle-menu" class="dropdown-menu">
+            <div class="track-option" data-sub-index="-1">🚫 Sin subtítulos</div>
+            <!-- Aquí se agregarán los tracks de subtítulos -->
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // Elementos principales
+        const video = document.getElementById('main-video');
+        const playPauseBtn = document.getElementById('play-pause');
+        const stopBtn = document.getElementById('stop');
+        const muteBtn = document.getElementById('mute');
+        const volIncBtn = document.getElementById('vol-inc');
+        const volDecBtn = document.getElementById('vol-dec');
+        const fsBtn = document.getElementById('fs');
+        const progressFill = document.getElementById('progress-fill');
+        const progressWrapper = document.getElementById('progress-wrapper');
+        const currentTimeSpan = document.getElementById('current-time');
+        const durationTimeSpan = document.getElementById('duration-time');
+        
+        // Nuevos botones y menús
+        const audioTrackBtn = document.getElementById('audio-track-btn');
+        const subtitleBtn = document.getElementById('subtitle-btn');
+        const audioMenu = document.getElementById('audio-menu');
+        const subtitleMenu = document.getElementById('subtitle-menu');
+
+        // Variables de estado
+        let isPlaying = false;
+        let isMuted = false;
+        let volumeBeforeMute = 1;
+        
+        // ---------- FUNCIONES AUXILIARES ----------
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            if (hrs > 0) {
+                return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateProgressAndTime() {
+            if (!video.duration || isNaN(video.duration)) return;
+            const percent = (video.currentTime / video.duration) * 100;
+            progressFill.style.width = percent + '%';
+            currentTimeSpan.textContent = formatTime(video.currentTime);
+        }
+
+        function setDurationDisplay() {
+            if (video.duration && isFinite(video.duration)) {
+                durationTimeSpan.textContent = formatTime(video.duration);
+            } else {
+                durationTimeSpan.textContent = "0:00";
+            }
+        }
+
+        function updatePlayPauseButton() {
+            if (video.paused || video.ended) {
+                playPauseBtn.innerHTML = '▶';
+                playPauseBtn.title = 'Reproducir';
+                isPlaying = false;
+            } else {
+                playPauseBtn.innerHTML = '⏸';
+                playPauseBtn.title = 'Pausar';
+                isPlaying = true;
+            }
+        }
+
+        function updateMuteButton() {
+            if (video.muted) {
+                muteBtn.innerHTML = '🔇';
+                muteBtn.title = 'Activar sonido';
+                isMuted = true;
+            } else {
+                muteBtn.innerHTML = '🔊';
+                muteBtn.title = 'Silenciar';
+                isMuted = false;
+            }
+        }
+
+        // ---------- PISTAS DE AUDIO (audioTracks) ----------
+        function buildAudioMenu() {
+            const audioMenuContainer = audioMenu;
+            // Limpiar excepto el primer elemento por defecto? Lo reconstruimos completamente
+            // Mantenemos la opción por defecto "Pista por defecto" que significa usar la pista que el navegador seleccione
+            // Primero: vaciar menú, luego agregar opción por defecto y después pistas reales
+            audioMenuContainer.innerHTML = '';
+            
+            const defaultOption = document.createElement('div');
+            defaultOption.className = 'track-option';
+            defaultOption.setAttribute('data-audio-index', '-1');
+            defaultOption.innerHTML = '🔊 Pista por defecto';
+            defaultOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Deshabilitar todas las pistas de audio para volver al comportamiento por defecto del navegador
+                if (video.audioTracks) {
+                    for (let i = 0; i < video.audioTracks.length; i++) {
+                        video.audioTracks[i].enabled = false;
+                    }
+                }
+                highlightActiveAudioTrack(-1);
+                closeAllMenus();
+            });
+            audioMenuContainer.appendChild(defaultOption);
+            
+            // Verificar si existe audioTracks (navegadores modernos)
+            if (video.audioTracks && video.audioTracks.length > 0) {
+                for (let i = 0; i < video.audioTracks.length; i++) {
+                    const track = video.audioTracks[i];
+                    const lang = track.language || `Pista ${i+1}`;
+                    const label = track.label || lang;
+                    const option = document.createElement('div');
+                    option.className = 'track-option';
+                    option.setAttribute('data-audio-index', i);
+                    option.innerHTML = `🎧 ${label} (${track.language || '??'})`;
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // Deshabilitar todas y habilitar solo la seleccionada
+                        for (let j = 0; j < video.audioTracks.length; j++) {
+                            video.audioTracks[j].enabled = (j === i);
+                        }
+                        highlightActiveAudioTrack(i);
+                        closeAllMenus();
+                    });
+                    audioMenuContainer.appendChild(option);
+                }
+            } else {
+                // Si no hay pistas o no es soportado, mostrar mensaje informativo
+                const noTrackMsg = document.createElement('div');
+                noTrackMsg.className = 'track-option';
+                noTrackMsg.style.opacity = '0.7';
+                noTrackMsg.style.cursor = 'default';
+                noTrackMsg.innerHTML = 'ℹ️ No hay pistas adicionales';
+                noTrackMsg.addEventListener('click', (e) => e.stopPropagation());
+                audioMenuContainer.appendChild(noTrackMsg);
+            }
+            
+            // Resaltar la pista activa actualmente
+            highlightActiveAudioTrack(getCurrentActiveAudioTrack());
+        }
+        
+        function getCurrentActiveAudioTrack() {
+            if (!video.audioTracks) return -1;
+            for (let i = 0; i < video.audioTracks.length; i++) {
+                if (video.audioTracks[i].enabled) return i;
+            }
+            return -1;
+        }
+        
+        function highlightActiveAudioTrack(activeIndex) {
+            const options = audioMenu.querySelectorAll('.track-option');
+            options.forEach(opt => {
+                opt.classList.remove('active-track');
+                const idx = opt.getAttribute('data-audio-index');
+                if (idx && parseInt(idx) === activeIndex) {
+                    opt.classList.add('active-track');
+                } else if (activeIndex === -1 && opt.getAttribute('data-audio-index') === '-1') {
+                    opt.classList.add('active-track');
+                }
+            });
+        }
+        
+        // ---------- SUBTÍTULOS: creación de tracks de ejemplo + manejo ----------
+        // Creamos tracks de subtítulos de muestra (español e inglés) usando Blob y URL.createObjectURL
+        // Esto permite demostrar la funcionalidad sin depender de archivos externos.
+        let subtitleTracks = []; // almacenamos los track elements para controlar modo
+        
+        function createSubtitlesTrack(lang, label, content, kind = 'subtitles') {
+            const blob = new Blob([content], { type: 'text/vtt' });
+            const url = URL.createObjectURL(blob);
+            const track = document.createElement('track');
+            track.kind = kind;
+            track.label = label;
+            track.srclang = lang;
+            track.src = url;
+            track.default = false;
+            return track;
+        }
+        
+        // Contenido VTT de ejemplo (español)
+        const spanishVTT = `WEBVTT
+         
+00:00:01.000 --> 00:00:04.000
+Hola, este es un ejemplo de subtítulo en español.
+
+00:00:05.000 --> 00:00:08.000
+Puedes cambiar de idioma usando el botón de subtítulos.
+
+00:00:09.000 --> 00:00:12.000
+¡Personaliza tu experiencia!
+`;
+        const englishVTT = `WEBVTT
+         
+00:00:01.000 --> 00:00:04.000
+Hello, this is an example subtitle in English.
+
+00:00:05.000 --> 00:00:08.000
+You can switch language using the subtitles button.
+
+00:00:09.000 --> 00:00:12.000
+Customize your experience!
+`;
+
+        function initSubtitles() {
+            // Eliminar tracks previos para evitar duplicados
+            const existingTracks = video.querySelectorAll('track');
+            existingTracks.forEach(track => track.remove());
+            
+            // Crear track español
+            const spanishTrack = createSubtitlesTrack('es', 'Español', spanishVTT);
+            spanishTrack.id = 'sub-es';
+            // Crear track inglés
+            const englishTrack = createSubtitlesTrack('en', 'English', englishVTT);
+            englishTrack.id = 'sub-en';
+            
+            video.appendChild(spanishTrack);
+            video.appendChild(englishTrack);
+            
+            // Forzar carga de tracks
+            // Los tracks se cargarán de manera asíncrona, pero el menú se actualiza después de que estén listos
+            // Esperamos a que se carguen
+            function buildSubtitleMenu() {
+                const tracks = video.textTracks;
+                const menu = subtitleMenu;
+                menu.innerHTML = '';
+                
+                // Opción "Sin subtítulos"
+                const noneOption = document.createElement('div');
+                noneOption.className = 'track-option';
+                noneOption.setAttribute('data-sub-index', '-1');
+                noneOption.innerHTML = '🚫 Sin subtítulos';
+                noneOption.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    for (let i = 0; i < tracks.length; i++) {
+                        tracks[i].mode = 'hidden';
+                    }
+                    highlightActiveSubtitleTrack(-1);
+                    closeAllMenus();
+                });
+                menu.appendChild(noneOption);
+                
+                // Agregar cada pista de subtítulos (kind='subtitles' o 'captions')
+                for (let i = 0; i < tracks.length; i++) {
+                    const track = tracks[i];
+                    if (track.kind === 'subtitles' || track.kind === 'captions') {
+                        const option = document.createElement('div');
+                        option.className = 'track-option';
+                        option.setAttribute('data-sub-index', i);
+                        const label = track.label || (track.language || `Subtítulo ${i+1}`);
+                        option.innerHTML = `📝 ${label} (${track.language || ''})`;
+                        option.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            // Ocultar todos y mostrar solo el seleccionado
+                            for (let j = 0; j < tracks.length; j++) {
+                                tracks[j].mode = (j === i) ? 'showing' : 'hidden';
+                            }
+                            highlightActiveSubtitleTrack(i);
+                            closeAllMenus();
+                        });
+                        menu.appendChild(option);
+                    }
+                }
+                
+                // Destacar el track activo actualmente
+                highlightActiveSubtitleTrack(getCurrentActiveSubtitleTrack());
+            }
+            
+            // Esperar a que los tracks estén cargados (puede ser asíncrono)
+            if (video.textTracks.length > 0) {
+                buildSubtitleMenu();
+            } else {
+                video.addEventListener('loadedmetadata', () => {
+                    buildSubtitleMenu();
+                });
+            }
+            // También cuando se añaden los tracks, puede que textTracks se actualice después
+            setTimeout(() => {
+                if (video.textTracks.length > 0) buildSubtitleMenu();
+            }, 300);
+        }
+        
+        function getCurrentActiveSubtitleTrack() {
+            const tracks = video.textTracks;
+            for (let i = 0; i < tracks.length; i++) {
+                if (tracks[i].mode === 'showing') {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        function highlightActiveSubtitleTrack(activeIndex) {
+            const options = subtitleMenu.querySelectorAll('.track-option');
+            options.forEach(opt => {
+                opt.classList.remove('active-track');
+                const idx = opt.getAttribute('data-sub-index');
+                if (idx && parseInt(idx) === activeIndex) {
+                    opt.classList.add('active-track');
+                } else if (activeIndex === -1 && opt.getAttribute('data-sub-index') === '-1') {
+                    opt.classList.add('active-track');
+                }
+            });
+        }
+        
+        // ----- MANEJO DE MENÚS DESPLEGABLES -----
+        function closeAllMenus() {
+            audioMenu.classList.remove('show');
+            subtitleMenu.classList.remove('show');
+        }
+        
+        function toggleMenu(menu, event) {
+            event.stopPropagation();
+            closeAllMenus();
+            menu.classList.toggle('show');
+            // Refrescar contenido dinámico de audio y subtítulos para mostrar estado actual
+            if (menu === audioMenu) {
+                buildAudioMenu(); // reconstruir para reflejar posibles cambios en pistas
+            }
+            if (menu === subtitleMenu) {
+                // Refrescar menú de subtítulos por si nuevos tracks
+                const tracks = video.textTracks;
+                if (tracks.length) {
+                    const menuDiv = subtitleMenu;
+                    // simplemente reconstruimos el contenido pero sin perder eventos (se mantiene lógica en buildSubtitleMenu)
+                    // Llamamos a la función que reconstruye desde cero manteniendo consistencia
+                    rebuildSubtitleMenuUI();
+                }
+            }
+        }
+        
+        function rebuildSubtitleMenuUI() {
+            const tracks = video.textTracks;
+            const menu = subtitleMenu;
+            menu.innerHTML = '';
+            const noneOption = document.createElement('div');
+            noneOption.className = 'track-option';
+            noneOption.setAttribute('data-sub-index', '-1');
+            noneOption.innerHTML = '🚫 Sin subtítulos';
+            noneOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                for (let i = 0; i < tracks.length; i++) {
+                    tracks[i].mode = 'hidden';
+                }
+                highlightActiveSubtitleTrack(-1);
+                closeAllMenus();
+            });
+            menu.appendChild(noneOption);
+            for (let i = 0; i < tracks.length; i++) {
+                const track = tracks[i];
+                if (track.kind === 'subtitles' || track.kind === 'captions') {
+                    const option = document.createElement('div');
+                    option.className = 'track-option';
+                    option.setAttribute('data-sub-index', i);
+                    const label = track.label || (track.language || `Pista ${i+1}`);
+                    option.innerHTML = `📝 ${label} (${track.language || ''})`;
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        for (let j = 0; j < tracks.length; j++) {
+                            tracks[j].mode = (j === i) ? 'showing' : 'hidden';
+                        }
+                        highlightActiveSubtitleTrack(i);
+                        closeAllMenus();
+                    });
+                    menu.appendChild(option);
+                }
+            }
+            highlightActiveSubtitleTrack(getCurrentActiveSubtitleTrack());
+        }
+        
+        // Eventos de botones
+        audioTrackBtn.addEventListener('click', (e) => toggleMenu(audioMenu, e));
+        subtitleBtn.addEventListener('click', (e) => toggleMenu(subtitleMenu, e));
+        
+        // Cerrar menús al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (!audioMenu.contains(event.target) && event.target !== audioTrackBtn &&
+                !subtitleMenu.contains(event.target) && event.target !== subtitleBtn) {
+                closeAllMenus();
+            }
+        });
+        
+        // ---------- CONTROLES BÁSICOS ----------
+        function togglePlayPause() {
+            if (video.paused || video.ended) {
+                video.play().catch(err => console.warn("Error al reproducir:", err));
+            } else {
+                video.pause();
+            }
+            updatePlayPauseButton();
+        }
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        video.addEventListener('click', togglePlayPause);
+        
+        stopBtn.addEventListener('click', () => {
+            video.pause();
+            video.currentTime = 0;
+            updatePlayPauseButton();
+            updateProgressAndTime();
+        });
+        
+        volIncBtn.addEventListener('click', () => {
+            let newVol = video.volume + 0.1;
+            if (newVol > 1) newVol = 1;
+            video.volume = newVol;
+            if (video.muted && newVol > 0) video.muted = false;
+            if (!video.muted) volumeBeforeMute = video.volume;
+            updateMuteButton();
+        });
+        
+        volDecBtn.addEventListener('click', () => {
+            let newVol = video.volume - 0.1;
+            if (newVol < 0) newVol = 0;
+            video.volume = newVol;
+            if (video.muted && newVol > 0) video.muted = false;
+            if (!video.muted) volumeBeforeMute = video.volume;
+            updateMuteButton();
+        });
+        
+        muteBtn.addEventListener('click', () => {
+            if (video.muted) {
+                video.muted = false;
+                video.volume = (volumeBeforeMute > 0) ? volumeBeforeMute : 0.5;
+                volumeBeforeMute = video.volume;
+            } else {
+                volumeBeforeMute = video.volume;
+                video.muted = true;
+            }
+            updateMuteButton();
+        });
+        
+        // Barra de progreso
+        function seekVideo(event) {
+            const rect = progressWrapper.getBoundingClientRect();
+            let clickX = event.clientX - rect.left;
+            let ratio = clickX / rect.width;
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+            if (video.duration && isFinite(video.duration)) {
+                video.currentTime = ratio * video.duration;
+                updateProgressAndTime();
+            }
+        }
+        progressWrapper.addEventListener('click', seekVideo);
+        let isDragging = false;
+        progressWrapper.addEventListener('mousedown', (e) => { isDragging = true; seekVideo(e); e.preventDefault(); });
+        window.addEventListener('mousemove', (e) => { if (isDragging) seekVideo(e); });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+        progressWrapper.addEventListener('touchstart', (e) => { isDragging = true; const touch = e.touches[0]; seekVideo({ clientX: touch.clientX }); e.preventDefault(); });
+        window.addEventListener('touchmove', (e) => { if (isDragging && e.touches.length) { seekVideo({ clientX: e.touches[0].clientX }); e.preventDefault(); } });
+        window.addEventListener('touchend', () => { isDragging = false; });
+        
+        // Fullscreen
+        function toggleFullscreen() {
+            const container = document.querySelector('.video-container');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                (container.requestFullscreen || container.webkitRequestFullscreen || container.msRequestFullscreen).call(container).catch(err => console.warn(err));
+            } else {
+                (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
+            }
+        }
+        fsBtn.addEventListener('click', toggleFullscreen);
+        function updateFullscreenIcon() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                fsBtn.innerHTML = '✖';
+                fsBtn.title = 'Salir pantalla completa';
+            } else {
+                fsBtn.innerHTML = '⛶';
+                fsBtn.title = 'Pantalla completa';
+            }
+        }
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+        
+        // Eventos del video
+        video.addEventListener('loadedmetadata', () => { setDurationDisplay(); updateProgressAndTime(); });
+        video.addEventListener('timeupdate', updateProgressAndTime);
+        video.addEventListener('play', updatePlayPauseButton);
+        video.addEventListener('pause', updatePlayPauseButton);
+        video.addEventListener('ended', () => { updatePlayPauseButton(); progressFill.style.width = '100%'; });
+        video.addEventListener('volumechange', updateMuteButton);
+        video.addEventListener('canplay', () => { setDurationDisplay(); updateProgressAndTime(); });
+        
+        // Configuración inicial: cargar subtítulos demo, menú de audio
+        initSubtitles();
+        setTimeout(() => { buildAudioMenu(); }, 100);
+        
+        // Si el video tiene pistas de audio cargadas después, actualizar
+        if (video.audioTracks) {
+            video.audioTracks.addEventListener ? video.audioTracks.addEventListener('addtrack', () => buildAudioMenu()) : null;
+        }
+        updatePlayPauseButton();
+        updateMuteButton();
+        setDurationDisplay();
+    })();
+</script>
+</body>
+
+</html>

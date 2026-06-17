@@ -307,4 +307,8 @@ const shareWhatsapp = () => {
     background: var(--secondary-color);
     color: var(--alternate-text-color);
 }
+
+.btn {
+    font-size: var(--p-size)
+}
 </style>
